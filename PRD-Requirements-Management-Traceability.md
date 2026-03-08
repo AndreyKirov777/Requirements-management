@@ -4,7 +4,7 @@
 **Document Version:** 0.1 (Draft)
 **Status:** Early Concept
 **Last Updated:** 2026-02-23
-**Author:** [Author Name]
+**Author:** Andreisadakov
 **Stakeholders:** Product Teams, Compliance/Regulatory Teams, AI Development Agents
 
 ---
@@ -240,7 +240,7 @@ Requirements are numbered with the prefix `FR-` and grouped by functional area. 
 | NFR-002 | Availability | The application shall maintain ≥ 99.9% uptime SLA. |
 | NFR-003 | Security | All data shall be encrypted at rest (AES-256) and in transit (TLS 1.3+). API access shall require authentication via API key or OAuth 2.0. |
 | NFR-004 | Auditability | All audit logs shall be immutable and retained for a minimum of 10 years (configurable per project for regulated use cases). |
-| NFR-005 | Scalability | The system shall support projects with up to 100,000 requirements without degraded performance. |
+| NFR-005 | Scalability | The system shall support projects with up to 100,000 requirements without degraded performance (response time and throughput within 10% of baseline under normal load, as measured by standard performance tests). |
 | NFR-006 | Multi-tenancy | The application shall be multi-tenant with strict data isolation between organizations. |
 | NFR-007 | API Rate Limits | The API shall support a minimum of 1,000 requests/minute per authenticated client. Burst limits shall be clearly documented and configurable for enterprise plans. |
 | NFR-008 | Accessibility | The web UI shall comply with WCAG 2.1 Level AA. |
@@ -257,7 +257,7 @@ This section defines requirements specific to enabling AI development agents to 
 | AI-002 | P0 | API responses shall use a stable, versioned JSON schema with no breaking changes between minor versions. |
 | AI-003 | P0 | The system shall support agent-specific API tokens scoped to specific permissions (e.g., read-only, write to specific projects). All agent actions shall be attributed in the audit log with the agent's identifier. |
 | AI-004 | P0 | The system shall support webhook subscriptions so agents can receive push notifications when requirements relevant to their task change (e.g., a requirement they are implementing is updated or disapproved). |
-| AI-005 | P1 | The system shall expose a `/requirements/{id}/implementation-status` endpoint that returns a structured view of: what the requirement is, its approval status, linked implementation items and their state, and test coverage status — enabling an agent to assess completeness without assembling data from multiple calls. |
+| AI-005 | P1 | The system shall expose a `/requirements/{id}/implementation-status` endpoint that returns a structured view of: what the requirement is, its approval status, linked implementation items and their state, and test coverage status — enabling an agent to assess completeness in a single API response. |
 | AI-006 | P1 | The system shall provide an agent-facing "clarification request" mechanism: an agent can POST a structured clarification request to a requirement (e.g., flagging an ambiguity), which creates a threaded comment assigned to the requirement owner for human resolution. |
 | AI-007 | P1 | The API shall support batch operations (e.g., bulk-fetch requirements by IDs, bulk-create traceability links) to minimize round-trips for agent workflows. |
 | AI-008 | P1 | The system shall provide a machine-readable OpenAPI 3.x specification and GraphQL SDL, automatically kept in sync with the deployed API. |
