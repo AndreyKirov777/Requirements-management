@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "@repo/contracts": "*",
-    "@repo/domain": "*"
+    "@repo/domain": "*",
+    "bullmq": "^5.71.0",
+    "ioredis": "^5.10.0"
   }
 }
