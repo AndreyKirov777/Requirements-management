@@ -1,5 +1,5 @@
 ---
-stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 inputDocuments:
   - PRD-Requirements-Management-Traceability.md
 ---
@@ -7,7 +7,7 @@ inputDocuments:
 # UX Design Specification Requirements-management
 
 **Author:** Andreisadakov
-**Date:** 2026-03-09
+**Date:** 2026-03-15
 
 ---
 
@@ -19,21 +19,25 @@ A Requirements Management & Traceability (RMT) web application that indexes requ
 
 ### Target Users
 
-**Product Owner** — Owns the product roadmap and requirement priorities. Needs at-a-glance coverage visibility, impact analysis for scope changes, and the ability to author/edit requirements through the web UI with changes flowing to Git as PRs.
+**Product Manager / Business Analyst ("Parker")** — Authors requirements, reviews change impact, and ensures shipped work matches approved scope. Needs fast authoring, explicit traceability, downstream impact visibility, and clear human-review workflows. Frustrated by manually cross-referencing planning docs, tickets, and spreadsheets.
 
-**Business Analyst** — Authors and structures detailed requirements. Needs hierarchical organization, rich metadata, custom fields, and traceability links. Cares about completeness: are all requirements linked, tested, and covered?
+**Systems / Compliance Engineer ("Sam")** — Owns compliance evidence, baselines, and audit readiness. Needs immutable audit trails, compliance-ready exports, baselines, and fast gap detection. Today audit prep takes weeks because evidence is fragmented.
 
-**AI SDLC Manager** — Establishes and manages AI-agent-driven development workflows. Needs to monitor agent activity on requirements, review agent-authored changes, resolve agent clarification requests, and ensure schema compliance across the repository. This is a new role with no established UX conventions.
+**AI Development Agent ("AGENT-01")** — Autonomous coding agent operating in an IDE or CI/CD environment. Reads approved requirements from the repository, implements them, declares traceability links, and requests clarification through Git workflows. Needs stable markdown schema, predictable file layout, validation feedback, and traceability state access.
 
-All three personas are technically comfortable with Git concepts (branches, PRs, commits). Desktop web is the only access interface.
+**QA / Test Engineer ("Quinn")** — Owns test coverage, regression confidence, and release-readiness evidence. Needs coverage dashboards, requirement-to-test linkage, status deltas, and release-ready reporting. Coverage gaps and changed requirements are discovered late today.
+
+**AI SDLC DevOps Operator ("Devon")** — Configures AI-enabled CI/CD workflows, requirement validation gates, agent feedback loops, and release controls. Needs requirement-aware status checks, ingestion observability, reconciliation controls, release gating signals, and machine-readable outputs.
+
+All human personas are technically comfortable with Git concepts (branches, PRs, commits). Desktop web is the primary access interface.
 
 ### Key Design Challenges
 
-1. **Traceability graph at scale** — Visualizing interconnected requirements, issues, test cases, and test results as an interactive graph that remains readable and useful for finding coverage gaps, orphans, and broken links at hundreds-to-thousands of nodes.
+1. **Traceability graph at scale** — Visualizing interconnected requirements, issues, test cases, and test results as an interactive graph that remains readable and useful for finding coverage gaps, orphans, and broken links at hundreds-to-thousands of nodes. Avoiding the "hairball" problem while enabling deep exploration and path finding.
 
 2. **Git-native UI parity** — The UI must feel like a first-class authoring environment while faithfully reflecting Git state. Ingestion status, conflicts, and PR-based write-back must be seamless, not bureaucratic.
 
-3. **AI agent transparency** — No established UX pattern exists for surfacing AI agent activity on requirements. The system must make agent-authored changes, clarification requests, and validation results visible and trustworthy without creating noise.
+3. **Five distinct personas, one interface** — Parker, Sam, Quinn, AGENT-01, and Devon have overlapping but different needs. The interface must serve daily coverage checks, deep audit work, CI/CD configuration, and AI agent transparency without mode overload.
 
 4. **Progressive compliance disclosure** — Baselines, audit trails, change rationale, and regulatory exports must be powerful when activated and invisible when not configured.
 
@@ -49,35 +53,36 @@ All three personas are technically comfortable with Git concepts (branches, PRs,
 
 ### Defining Experience
 
-The core user experience centers on **coverage status checking** — the most frequent user action and the product's primary value surface. Users open the application to answer one question: "Are my requirements covered?" The coverage dashboard is the answer, and it must be accurate, immediate, and actionable.
+The core user experience centers on **traceability chain review** — the most frequent user action and the product's primary value surface. Users open the application to answer one question: "Are my requirements covered, and how do they connect through the SDLC?" The traceability chain — from stakeholder need through requirement, implementation, test case, and test result — must be navigable, immediate, and trustworthy.
 
-This experience is only possible because **automatic Git synchronization** operates as invisible infrastructure. The traceability graph stays fresh without user intervention. Requirements merged via PRs — whether authored by humans or AI agents — appear in the coverage view within seconds. Users never think about sync; they trust the dashboard because it is always current.
+This experience is only possible because **automatic Git synchronization** operates as invisible infrastructure. The traceability graph stays fresh without user intervention. Requirements merged via PRs — whether authored by humans or AI agents — appear in the coverage view within seconds. Users never think about sync; they trust the data because it is always current.
 
 ### Platform Strategy
 
 - **Desktop web application only** (no mobile, no native desktop packaging)
 - **Mouse/keyboard-optimized** interactions with keyboard shortcuts for power users
 - **No offline requirement** — the system depends on live Git connectivity and webhook ingestion
-- **GitHub and GitLab** are the only repository integrations for v1 (no Jira, Linear, or Slack)
+- **GitHub and GitLab** are the only repository integrations for v1
+- Full workflow support at widths >= 1024px; review and dashboard workflows usable at 768px–1023px
 
 ### Effortless Interactions
 
+- **Git synchronization** happens automatically on every merged PR/MR via webhooks — no manual trigger, no sync button, no configuration beyond initial repo connection
 - **Coverage status** is visible the moment the application loads — no navigation required
-- **Git synchronization** happens automatically on every merged PR/MR via webhooks — no manual trigger
 - **Orphan detection** surfaces uncovered requirements without the user asking
 - **Impact analysis** shows the blast radius of a requirement change in-context, not in a separate report
 - **Agent activity** appears inline with requirement changes — no separate "agent dashboard" needed
 
 ### Critical Success Moments
 
-1. **First trust**: User connects a repository, requirements are ingested, and the coverage dashboard populates with real data within seconds. No manual import, no configuration wizard.
-2. **Gap discovery**: User sees a red indicator, clicks it, and immediately understands which requirement is uncovered, why, and what to do about it.
-3. **Silent sync**: An AI agent merges a PR modifying requirements. The dashboard updates without user action. The change is traceable to the agent's commit.
-4. **Trust failure (make-or-break)**: If the dashboard ever shows stale or incorrect data because sync failed silently, user trust is permanently damaged. Ingestion failures must be loud and visible.
+1. **First trust**: User connects a repository, requirements are ingested, and the traceability chain populates with real data within seconds. No manual import, no configuration wizard.
+2. **Gap discovery**: User sees an uncovered requirement, clicks it, and immediately understands the full chain — what's linked, what's missing, and what to do about it.
+3. **Silent sync**: An AI agent merges a PR modifying requirements. The traceability view updates without user action. The change is traceable to the agent's commit.
+4. **Trust failure (make-or-break)**: If the traceability view ever shows stale or incorrect data because sync failed silently, user trust is permanently damaged. Ingestion failures must be loud and visible.
 
 ### Experience Principles
 
-1. **Coverage is the heartbeat** — The coverage dashboard is the primary interface. Every design decision optimizes for "how fast can I understand my coverage status?"
+1. **Traceability is the heartbeat** — The traceability chain is the primary interface. Every design decision optimizes for "how fast can I trace a requirement through the SDLC?"
 2. **Sync is invisible infrastructure** — Git synchronization is automatic, reliable, and silent. The default state is "it just works." Failures are surfaced clearly.
 3. **Gaps scream, health whispers** — Problems are impossible to miss. A healthy system feels calm, not noisy with confirmations.
 4. **One click from overview to detail** — Any dashboard indicator is one click from the specific requirement, link, or commit that explains it.
@@ -89,19 +94,19 @@ This experience is only possible because **automatic Git synchronization** opera
 
 **Confident and in control** — The dominant feeling when using Requirements-management. Users should feel they have complete command over every requirement across the entire SDLC. Not overwhelmed by data, not anxious about gaps — genuinely in control because the system gives them full visibility.
 
-**"I can truly control all requirements in the whole SDLC"** — This is the statement that makes users recommend the product to colleagues. It's not about speed or cost savings alone — it's the feeling of total situational awareness across requirements, implementation, testing, and AI agent activity.
+**"I can truly see and control all requirements across the whole SDLC"** — This is the statement that makes users recommend the product to colleagues. It's not about speed or cost savings alone — it's the feeling of total situational awareness across requirements, implementation, testing, and AI agent activity.
 
 ### Emotional Journey Mapping
 
 | Stage | Desired Feeling | Design Implication |
 |-------|----------------|-------------------|
 | First discovery | Curiosity + clarity | Clean landing page that immediately communicates "traceability for AI SDLC" — no enterprise jargon |
-| Onboarding / repo connect | Confidence building | Fast time-to-value: repo connected → requirements indexed → dashboard populated in under a minute |
-| Daily use (coverage check) | Calm control | Dashboard loads instantly, coverage state is unambiguous, no interpretation needed |
+| Onboarding / repo connect | Confidence building | Fast time-to-value: repo connected → requirements indexed → traceability chain populated in under a minute |
+| Daily use (traceability review) | Calm control | Traceability chains load instantly, coverage state is unambiguous, no interpretation needed |
 | Gap discovery | Informed alertness | Red indicators are clear but not alarming — the system caught it, user just needs to act |
 | Sync conflict / failure | Calm confidence | The system detected the problem, preserved both versions, and presents a clear resolution path. No panic. |
 | Reviewing AI agent changes | Trust + oversight | Agent activity is visible and attributable — the user feels like a manager reviewing work, not a detective hunting for changes |
-| Returning after time away | Reassurance | The dashboard reflects the current truth. Nothing drifted. Sync kept working while they were gone. |
+| Returning after time away | Reassurance | The traceability view reflects the current truth. Nothing drifted. Sync kept working while they were gone. |
 
 ### Micro-Emotions
 
@@ -144,8 +149,6 @@ No existing RTM solution serves the AI SDLC space. Inspiration is drawn from adj
 
 **Neo4j Browser / Bloom** (graph visualization) — Interactive node-and-edge exploration, progressive expansion, path highlighting, type-based filtering. Model for the traceability graph.
 
-**Notion** (structured content) — Inline editing, multiple views (tree/table/board), slash-commands, hierarchical sidebar. Model for requirement authoring and organization.
-
 ### Transferable UX Patterns
 
 **Navigation:** Repository-scoped hierarchy (project → module → requirement) with a collapsible sidebar tree and Cmd+K command palette for keyboard-first access.
@@ -155,8 +158,6 @@ No existing RTM solution serves the AI SDLC space. Inspiration is drawn from adj
 **Activity feed:** Chronological stream of changes with actor attribution (human or agent), commit links, and contextual actions. Aggregated for agent activity to prevent noise.
 
 **Graph visualization:** Interactive canvas with zoom, pan, and focus. Click a node to expand connections. Filter by node type and link type. Path highlighting for traceability chain traversal. Opens focused on a single requirement, expands on demand.
-
-**Authoring:** Inline editing (click to edit, no modal edit mode). Multiple views of the same requirement set (tree, table). Slash-commands for structured actions (add link, insert template).
 
 **Interaction quality:** Keyboard shortcuts for all frequent actions. Minimal chrome. Fast transitions with no loading spinners for in-memory operations. Contextual actions on hover/selection, not permanent toolbars.
 
@@ -174,7 +175,7 @@ No existing RTM solution serves the AI SDLC space. Inspiration is drawn from adj
 - Grafana-style dashboard-as-home-screen with coverage KPIs and drill-down
 - GitHub-style activity feed with actor attribution for human and agent changes
 - Linear-style keyboard-first interaction model and minimal visual chrome
-- Notion-style inline editing for requirement fields
+- Neo4j-style progressive graph expansion with node focus
 
 **Adapt for this domain:**
 - Neo4j graph exploration adapted with requirement-specific node types, coverage coloring, and orphan highlighting
@@ -232,7 +233,7 @@ Graph visualization will use a dedicated library (D3.js or vis.js) integrated in
 
 ### Core Interaction
 
-**"See your entire requirement landscape over AI SDLC and know instantly what's covered, what's broken, and what needs attention."**
+**"See your entire requirement landscape across the AI SDLC and know instantly what's covered, what's broken, and what needs attention."**
 
 This is the interaction users will describe to colleagues. It combines three elements no existing tool provides together: full requirement visibility, real-time coverage status, and AI agent activity transparency — all within the context of an AI-driven software development lifecycle.
 
@@ -418,6 +419,7 @@ All directions were visualized in `ux-design-directions.html` with dark/light th
 | **Graph** | #3 Graph Explorer | Traceability visualization, impact analysis, path finding | All personas, audit reviewers |
 
 **Navigation model:**
+- Tree-First sidebar (#2) with coverage badges is the **shared navigation** across all views
 - Dashboard is the **home screen** (loads on app open)
 - Table and Graph are peer views accessible from the sidebar and via Cmd+K command palette
 - Views share the same sidebar navigation, sync status indicator, and topbar structure
@@ -516,7 +518,7 @@ flowchart TD
 
 ---
 
-### Journey 2: Requirement Authoring via UI
+### Journey 2: Requirement Authoring & Git Sync
 
 **Persona:** Business Analyst
 **Goal:** Create or edit a requirement through the web UI with changes flowing to Git as a PR
@@ -786,11 +788,7 @@ flowchart TD
 
 **Purpose:** Display a single project health metric with at-a-glance status
 **Usage:** Dashboard view — 4-column grid (coverage %, orphans, sync health, agent activity)
-**Anatomy:**
-- Label (uppercase, small, tertiary text)
-- Value (28px, bold, color-coded by severity)
-- Subtitle (context: "218 / 298 requirements")
-- Click target (entire card is clickable)
+**Anatomy:** Label (uppercase, small, tertiary text); Value (28px, bold, color-coded by severity); Subtitle (context: "218 / 298 requirements"); Click target (entire card is clickable)
 **States:** Default, hover (elevated shadow), loading (pulse animation on value)
 **Variants:** Numeric (coverage %, orphan count), status (sync health: OK/degraded/failed), count (agent activity)
 **Interaction:** Click → navigates to Table view with pre-applied filter matching the KPI context
@@ -800,50 +798,27 @@ flowchart TD
 
 **Purpose:** Interactive visualization of the traceability graph with coverage-state coloring
 **Usage:** Graph view — full main content area
-**Anatomy:**
-- Canvas area (D3.js or vis.js) with zoom, pan, center controls
-- Node elements: rounded rectangles with label, type icon, coverage dot
-- Edge elements: lines with link-type indicators (solid=derives, dashed=relates)
-- Legend overlay (bottom-left): node types and colors
-- Toolbar (top): zoom-to-fit, show orphans, path finder, filter toggles
+**Anatomy:** Canvas area (D3.js or vis.js) with zoom, pan, center controls; Node elements (rounded rectangles with label, type icon, coverage dot); Edge elements (lines with link-type indicators); Legend overlay (bottom-left); Toolbar (top): zoom-to-fit, show orphans, path finder, filter toggles
 **States:** Default, node-hovered (highlight edges), node-selected (expanded connections, ring glow), path-highlighted (bold edges on path)
 **Variants:** Focused (single node + neighbors), expanded (multi-level), full (project-wide with clustering)
-**Interaction:**
-- Click node → expand immediate connections
-- Double-click node → center and focus
-- Click node + hold → open detail overlay
-- Drag canvas → pan; scroll → zoom
-- Path finder: click start node, click end node → path highlighted
+**Interaction:** Click node → expand immediate connections; Double-click node → center and focus; Click node + hold → open detail overlay; Drag canvas → pan; scroll → zoom; Path finder: click start node, click end node → path highlighted
 **Accessibility:** Keyboard navigation between nodes (arrow keys), `aria-label` on each node with ID and status, screen-reader summary of graph structure available via command
 
 #### 3. Requirement Detail Overlay
 
 **Purpose:** Show full requirement details with tabbed contextual panels, support inline editing
 **Usage:** Opens from Table row click, Graph node click, or activity feed item
-**Anatomy:**
-- Sliding panel from right (480px wide, overlays main content)
-- Header: requirement ID (monospace), title (editable), close button
-- Tab bar: Details | Traceability | History | Activity | Conflict (conditional)
-- Tab content area with internal scroll
-- Footer: action buttons (Edit, View in Graph, Export)
+**Anatomy:** Sliding panel from right (480px wide, overlays main content); Header: requirement ID (monospace), title (editable), close button; Tab bar: Details | Traceability | History | Activity | Conflict (conditional); Tab content area with internal scroll; Footer: action buttons (Edit, View in Graph, Export)
 **States:** Closed, open (sliding transition 200ms), editing (fields become editable), saving (spinner on save button)
 **Variants:** Standard (4 tabs), conflict (5th Conflict tab appears when sync status = conflict)
-**Interaction:**
-- Open: slide in from right with backdrop dimming main content slightly
-- Close: Esc key, click backdrop, or close button
-- Edit: click any field value to make it editable; Tab to next field
-- Save: generates PR, shows toast, transitions to "PR pending" state
+**Interaction:** Open: slide in from right with backdrop dimming main content slightly; Close: Esc key, click backdrop, or close button; Edit: click any field value to make it editable; Tab to next field; Save: generates PR, shows toast, transitions to "PR pending" state
 **Accessibility:** Focus trapped inside overlay when open, Esc to close, tab navigation between fields and tabs
 
 #### 4. Traceability Chain Panel
 
 **Purpose:** Show the vertical traceability chain for a single requirement (upstream → current → downstream)
 **Usage:** Detail overlay Traceability tab; split-right panel in tree view
-**Anatomy:**
-- Vertical list of linked items, each in a card-like row
-- Left border color indicates status (covered=green, uncovered=red, partial=amber)
-- Arrow indicators showing direction (↑ upstream, ● current, ↓ downstream)
-- Each item shows: ID (monospace), title, status badge, link type label
+**Anatomy:** Vertical list of linked items, each in a card-like row; Left border color indicates status (covered=green, uncovered=red, partial=amber); Arrow indicators showing direction (↑ upstream, ● current, ↓ downstream); Each item shows: ID (monospace), title, status badge, link type label
 **States:** Default, item-hovered (highlight), item-expanded (shows additional metadata)
 **Variants:** Compact (ID + status only), expanded (full details per item)
 **Interaction:** Click any item → opens its detail overlay (replaces current); hover → shows quick-view popover
@@ -853,11 +828,7 @@ flowchart TD
 
 **Purpose:** Chronological stream of changes with actor attribution
 **Usage:** Dashboard panel (recent activity), Detail overlay Activity tab (requirement-scoped)
-**Anatomy:**
-- Vertical list of activity items, newest first
-- Each item: avatar (28px circle), text description, timestamp
-- Agent avatars have teal border ring
-- Expandable detail: PR link, affected requirements list, validation status
+**Anatomy:** Vertical list of activity items, newest first; Each item: avatar (28px circle), text description, timestamp; Agent avatars have teal border ring; Expandable detail: PR link, affected requirements list, validation status
 **States:** Default, expanded (shows full change detail), loading (new items streaming in)
 **Variants:** Global (dashboard — all activity), scoped (detail overlay — single requirement activity)
 **Interaction:** Click item → expands to show full detail; click PR link → opens in new tab; click requirement ID → opens detail overlay
@@ -867,11 +838,7 @@ flowchart TD
 
 **Purpose:** Side-by-side field-level diff with resolution actions
 **Usage:** Detail overlay Conflict tab (appears when sync status = conflict)
-**Anatomy:**
-- Two-column layout: "Repository version" (left) | "Pending PR version" (right)
-- Each field shown as a row: field name, repo value, PR value
-- Changed fields highlighted with diff coloring (removed=red bg, added=green bg)
-- Resolution action bar at bottom: "Accept Repository" | "Accept PR" | "Manual Merge"
+**Anatomy:** Two-column layout: "Repository version" (left) | "Pending PR version" (right); Each field shown as a row: field name, repo value, PR value; Changed fields highlighted with diff coloring (removed=red bg, added=green bg); Resolution action bar at bottom: "Accept Repository" | "Accept PR" | "Manual Merge"
 **States:** Comparing (default), resolving (spinner on chosen action), resolved (success state)
 **Variants:** Simple (few fields changed), complex (many fields — scrollable)
 **Interaction:** Click resolution button → confirmation dialog → execute → transition to resolved state
@@ -881,10 +848,7 @@ flowchart TD
 
 **Purpose:** Persistent display of Git synchronization health
 **Usage:** Sidebar footer — visible in all views
-**Anatomy:**
-- Status dot (6px circle: green=healthy, amber=pending, red=failed)
-- Text: "Synced Ns ago · {short SHA}" or "2 pending · 1 conflict"
-- Expandable on click: full sync detail (last webhook, pending items, failed items)
+**Anatomy:** Status dot (6px circle: green=healthy, amber=pending, red=failed); Text: "Synced Ns ago · {short SHA}" or "2 pending · 1 conflict"; Expandable on click: full sync detail (last webhook, pending items, failed items)
 **States:** Healthy (green, subtle), pending (amber, subtle pulse), failed (red, persistent), conflict (yellow, badge count)
 **Variants:** Compact (sidebar footer), expanded (popover with full detail)
 **Interaction:** Click → popover with sync detail; includes "Re-sync" button for manual trigger
@@ -895,12 +859,7 @@ flowchart TD
 **Purpose:** Reusable micro-component indicating coverage state
 **Usage:** Table cells, sidebar tree nodes, graph node overlays, KPI cards, chain panel items
 **Anatomy:** 8px circle + optional text label
-**States:**
-- Covered: emerald-500 + "✓" or "100%"
-- Partial: amber-500 + "◐" or "67%"
-- Uncovered: rose-500 + "✗" or "0%"
-- Conflict: yellow-500 + "⚠"
-- Pending: amber-500 + pulse animation
+**States:** Covered (emerald-500 + "✓" or "100%"); Partial (amber-500 + "◐" or "67%"); Uncovered (rose-500 + "✗" or "0%"); Conflict (yellow-500 + "⚠"); Pending (amber-500 + pulse animation)
 **Variants:** Dot-only (8px, table cells), dot+label (badge, sidebar), dot+percentage (KPI detail)
 **Accessibility:** Never color-only — always paired with icon or text label; `aria-label` states coverage status
 
@@ -908,10 +867,7 @@ flowchart TD
 
 **Purpose:** Click-to-edit any requirement field without entering a separate edit mode
 **Usage:** Detail overlay fields (title, description, type, priority, tags, custom fields)
-**Anatomy:**
-- Display state: field value with subtle hover indicator (pencil icon appears)
-- Edit state: input/textarea/select replaces display value, auto-focused
-- Slash-command trigger: typing "/" opens action menu (add link, insert template)
+**Anatomy:** Display state: field value with subtle hover indicator (pencil icon appears); Edit state: input/textarea/select replaces display value, auto-focused; Slash-command trigger: typing "/" opens action menu (add link, insert template)
 **States:** Display (default), hover (pencil icon), editing (input active), saving (subtle spinner), error (red border + message)
 **Interaction:** Click field → edit mode; Enter or click away → save; Esc → cancel; "/" → slash-command menu
 **Accessibility:** `aria-label` includes field name, edit state announced to screen readers
@@ -920,11 +876,7 @@ flowchart TD
 
 **Purpose:** Show repository ingestion progress during onboarding
 **Usage:** Onboarding flow (Journey 4) — appears after user confirms "Start ingestion"
-**Anatomy:**
-- Progress bar with file count: "Ingesting 142 / 298 files..."
-- Validation summary updating in real-time: "N valid, M warnings, K errors"
-- File list (collapsible): each file with status icon (✓ valid, ⚠ warning, ✗ error)
-- Completion state: "Ingestion complete — Dashboard ready" with button to proceed
+**Anatomy:** Progress bar with file count: "Ingesting 142 / 298 files..."; Validation summary updating in real-time: "N valid, M warnings, K errors"; File list (collapsible): each file with status icon (✓ valid, ⚠ warning, ✗ error); Completion state: "Ingestion complete — Dashboard ready" with button to proceed
 **States:** In-progress (animated bar), complete-clean (all green), complete-with-warnings (summary shown), failed (error detail)
 **Interaction:** Progress is automatic; click any file to see validation detail; click "Go to Dashboard" on completion
 **Accessibility:** Progress bar has `role="progressbar"` with `aria-valuenow`; status changes announced via `aria-live`
@@ -978,289 +930,82 @@ flowchart TD
 | Requirement saved (local) | Info (indigo border-left) | 3s auto-dismiss | None |
 | Validation error on save | Error | Persistent until dismissed | "Show errors" button |
 
-**Rules:**
-- Success/info toasts auto-dismiss; warning/error toasts persist
-- Maximum 3 toasts visible simultaneously (stack from bottom-right)
-- Each toast has a dismiss button (X) regardless of auto-dismiss behavior
-- No toast for sync success — silent sync is the default (principle: "health whispers")
+**Rules:** Success/info toasts auto-dismiss; warning/error toasts persist. Maximum 3 toasts visible simultaneously (stack from bottom-right). Each toast has a dismiss button (X). No toast for sync success — silent sync is the default ("health whispers").
 
 **Sync Status Transitions:**
 
 | From | To | Visual | User action required? |
-|------|----|--------|----------------------|
+|------|----|--------|------------------------|
 | In sync | PR pending | Amber dot, "PR pending" text | No — wait for merge |
 | PR pending | In sync | Green dot, "Synced Ns ago" | No — automatic |
 | In sync | Conflict | Yellow dot + badge count | Yes — resolve conflict |
 | Conflict | PR pending | Amber dot after resolution | No — wait for merge |
 | Any | Failed | Red dot, "Ingestion failed" | Yes — retry or investigate |
 
-**Validation Error Display:**
-- Inline: red border on field, error message below in rose text
-- Summary: toast with error count + "Show errors" button that scrolls to first error
-- Schema validation (on PR): shown as status check in activity feed, not as a toast
+**Validation Error Display:** Inline: red border on field, error message below in rose text. Summary: toast with error count + "Show errors" button that scrolls to first error. Schema validation (on PR): shown as status check in activity feed, not as a toast.
 
 ### Navigation Patterns
 
-**View Switching:**
-- Sidebar icons switch between Dashboard, Table, Graph views
-- Active view has indigo background highlight on sidebar icon
-- View switch preserves selected project/module context
-- Cmd+K command palette: type view name to switch ("dashboard", "table", "graph")
-- Keyboard shortcuts: Cmd+1 (Dashboard), Cmd+2 (Table), Cmd+3 (Graph)
+**View Switching:** Sidebar icons switch between Dashboard, Table, Graph views. Active view has indigo background highlight on sidebar icon. View switch preserves selected project/module context. Cmd+K command palette: type view name to switch ("dashboard", "table", "graph"). Keyboard shortcuts: Cmd+1 (Dashboard), Cmd+2 (Table), Cmd+3 (Graph).
 
-**Drill-Down Pattern:**
-- Dashboard KPI → Table with pre-applied filter (one click, no configuration)
-- Table row → Detail overlay slides in from right (one click)
-- Detail overlay "View in Graph" → Graph centered on that node (one click)
-- Graph node → Detail overlay (same overlay as Table's)
-- All drill-downs are reversible: Esc or back button returns to previous context
+**Drill-Down Pattern:** Dashboard KPI → Table with pre-applied filter (one click, no configuration). Table row → Detail overlay slides in from right (one click). Detail overlay "View in Graph" → Graph centered on that node (one click). Graph node → Detail overlay (same overlay as Table's). All drill-downs are reversible: Esc or back button returns to previous context.
 
-**Breadcrumb Pattern:**
-- Topbar always shows current location: `View > Context > Selection`
-- Examples: `Dashboard · All Projects`, `Table · Auth Module · FR-003`, `Graph · Centered on FR-010`
-- Each breadcrumb segment is clickable to navigate up the hierarchy
-- Breadcrumb updates on drill-down without full page navigation
+**Breadcrumb Pattern:** Topbar always shows current location: `View > Context > Selection`. Examples: `Dashboard · All Projects`, `Table · Auth Module · FR-003`, `Graph · Centered on FR-010`. Each breadcrumb segment is clickable to navigate up the hierarchy. Breadcrumb updates on drill-down without full page navigation.
 
-**Context Preservation:**
-- Switching from Table to Graph preserves the selected requirement (graph centers on it)
-- Switching from Graph to Table preserves the active filter if one was applied
-- Detail overlay remains open when switching views if the requirement exists in both
-- Filter state is stored per-session — returning to a view restores the last-used filter
+**Context Preservation:** Switching from Table to Graph preserves the selected requirement (graph centers on it). Switching from Graph to Table preserves the active filter if one was applied. Detail overlay remains open when switching views if the requirement exists in both. Filter state is stored per-session — returning to a view restores the last-used filter.
 
 ### Button Hierarchy
 
-**Primary action** (indigo background, white text):
-- One per visible context — the most important action
-- Examples: "+ New Requirement" (Table), "Start Ingestion" (onboarding), "Save" (editing)
+**Primary action** (indigo background, white text): One per visible context — the most important action. Examples: "+ New Requirement" (Table), "Start Ingestion" (onboarding), "Save" (editing).
 
-**Secondary action** (border, no fill):
-- Supporting actions, always paired with or subordinate to a primary action
-- Examples: "Export", "Filter", "History", "Cancel"
+**Secondary action** (border, no fill): Supporting actions, always paired with or subordinate to a primary action. Examples: "Export", "Filter", "History", "Cancel".
 
-**Destructive action** (rose text, no fill; rose background on hover):
-- Actions that remove or overwrite data
-- Always require a confirmation dialog before execution
-- Examples: "Delete requirement", "Accept Repository version" (overwrites PR)
+**Destructive action** (rose text, no fill; rose background on hover): Actions that remove or overwrite data. Always require a confirmation dialog before execution. Examples: "Delete requirement", "Accept Repository version" (overwrites PR).
 
-**Ghost action** (no border, text-only):
-- Tertiary actions, less visual weight
-- Examples: "View all", "Show more", breadcrumb links
+**Ghost action** (no border, text-only): Tertiary actions, less visual weight. Examples: "View all", "Show more", breadcrumb links.
 
-**Icon-only action** (square, border, tooltip on hover):
-- Toolbar actions where space is limited
-- Always have tooltip with action name and keyboard shortcut
-- Examples: zoom controls (Graph), column toggles (Table), close button (overlay)
+**Icon-only action** (square, border, tooltip on hover): Toolbar actions where space is limited. Always have tooltip with action name and keyboard shortcut. Examples: zoom controls (Graph), column toggles (Table), close button (overlay).
 
-**Rules:**
-- Never more than one primary button visible in the same action group
-- Destructive actions never styled as primary — always secondary or explicit destructive style
-- All buttons have visible focus ring (2px indigo) for keyboard navigation
-- Button labels use verbs: "Create", "Save", "Export", "Resolve" — not "OK", "Submit", "Yes"
+**Rules:** Never more than one primary button visible in the same action group. Destructive actions never styled as primary. All buttons have visible focus ring (2px indigo). Button labels use verbs: "Create", "Save", "Export", "Resolve" — not "OK", "Submit", "Yes".
 
 ### Empty States
 
-**Dashboard — No projects:**
-- Illustration (minimal, on-brand line art): empty graph outline
-- Headline: "No projects yet"
-- Body: "Connect a Git repository to start tracking requirement coverage."
-- Primary CTA: "Connect Repository"
+**Dashboard — No projects:** Illustration (minimal, on-brand line art): empty graph outline. Headline: "No projects yet". Body: "Connect a Git repository to start tracking requirement coverage." Primary CTA: "Connect Repository".
 
-**Table — No matching requirements:**
-- Headline: "No requirements match your filters"
-- Body: "Try adjusting your filters or search terms."
-- Secondary CTA: "Clear filters"
+**Table — No matching requirements:** Headline: "No requirements match your filters". Body: "Try adjusting your filters or search terms." Secondary CTA: "Clear filters".
 
-**Graph — No traceability links:**
-- Headline: "No traceability links yet"
-- Body: "Add traceability links to requirements to see the graph."
-- Context: show the selected node without edges
+**Graph — No traceability links:** Headline: "No traceability links yet". Body: "Add traceability links to requirements to see the graph." Context: show the selected node without edges.
 
-**Detail overlay — No activity:**
-- Simple text: "No activity yet for this requirement."
+**Detail overlay — No activity:** Simple text: "No activity yet for this requirement."
 
-**Rules:**
-- Empty states always offer a constructive next action
-- Empty states use `--text-secondary` color — present but not alarming
-- Never show a completely blank area — always communicate why it's empty
+**Rules:** Empty states always offer a constructive next action. Empty states use `--text-secondary` color — present but not alarming. Never show a completely blank area — always communicate why it's empty.
 
 ### Loading States
 
-**Dashboard initial load:**
-- KPI cards show number placeholder (pulse animation) — card structure visible immediately
-- Activity feed shows 3 skeleton items (pulsing gray blocks)
-- No full-page spinner — layout is visible within 200ms, data fills in
+**Dashboard initial load:** KPI cards show number placeholder (pulse animation) — card structure visible immediately. Activity feed shows 3 skeleton items (pulsing gray blocks). No full-page spinner — layout is visible within 200ms, data fills in.
 
-**Table load:**
-- Table header and column structure visible immediately
-- Rows show skeleton placeholders (pulsing) while data loads
-- Filter bar is interactive during load — user can set filters before data arrives
+**Table load:** Table header and column structure visible immediately. Rows show skeleton placeholders (pulsing) while data loads. Filter bar is interactive during load — user can set filters before data arrives.
 
-**Graph load:**
-- Canvas background visible immediately
-- Nodes appear with a fade-in as graph layout is computed
-- "Computing layout..." text if layout takes > 1 second
+**Graph load:** Canvas background visible immediately. Nodes appear with a fade-in as graph layout is computed. "Computing layout..." text if layout takes > 1 second.
 
-**Inline operations:**
-- Save button shows subtle spinner replacing the label text
-- Field border pulses once on successful save (emerald flash)
-- No blocking overlay for inline saves — user can continue editing other fields
+**Inline operations:** Save button shows subtle spinner replacing the label text. Field border pulses once on successful save (emerald flash). No blocking overlay for inline saves — user can continue editing other fields.
 
-**Rules:**
-- Never block the entire UI for a loading operation
-- Show structure immediately, fill data progressively
-- Operations under 300ms need no loading indicator
-- Operations 300ms–2s show subtle inline indicator (spinner, pulse)
-- Operations over 2s show progress indicator with context ("Ingesting 42/298 files...")
+**Rules:** Never block the entire UI for a loading operation. Show structure immediately, fill data progressively. Operations under 300ms need no loading indicator. Operations 300ms–2s show subtle inline indicator (spinner, pulse). Operations over 2s show progress indicator with context ("Ingesting 42/298 files...").
 
 ### Form and Editing Patterns
 
-**Inline editing behavior:**
-- Click field value → edit mode (input replaces display text)
-- Tab → move to next editable field
-- Enter → save current field
-- Esc → cancel edit, restore previous value
-- Click outside → save current field (same as Enter)
-- Unsaved changes: field has indigo left border until saved
+**Inline editing behavior:** Click field value → edit mode (input replaces display text). Tab → move to next editable field. Enter → save current field. Esc → cancel edit, restore previous value. Click outside → save current field (same as Enter). Unsaved changes: field has indigo left border until saved.
 
-**Validation timing:**
-- Required fields: validate on blur (when user leaves the field)
-- Format validation (e.g., requirement ID pattern): validate on change with 500ms debounce
-- Cross-field validation (e.g., duplicate ID): validate on save attempt
-- Errors clear automatically when the user corrects the value
+**Validation timing:** Required fields: validate on blur (when user leaves the field). Format validation (e.g., requirement ID pattern): validate on change with 500ms debounce. Cross-field validation (e.g., duplicate ID): validate on save attempt. Errors clear automatically when the user corrects the value.
 
-**Slash-command pattern:**
-- Type "/" in any text field → context menu appears with available actions
-- Actions: "Add traceability link", "Insert template", "Add tag"
-- Arrow keys to navigate menu, Enter to select, Esc to dismiss
-- Slash-command menu is contextual — available actions depend on the field type
+**Slash-command pattern:** Type "/" in any text field → context menu appears with available actions. Actions: "Add traceability link", "Insert template", "Add tag". Arrow keys to navigate menu, Enter to select, Esc to dismiss. Slash-command menu is contextual — available actions depend on the field type.
 
 ### Search and Filtering Patterns
 
-**Command palette (Cmd+K):**
-- Global — works in any view
-- Search scope: requirement IDs, titles, tags, view names, actions
-- Results grouped by type: "Requirements", "Views", "Actions"
-- Recent searches shown on empty query
-- Enter on result → navigate to that item in the appropriate view
+**Command palette (Cmd+K):** Global — works in any view. Search scope: requirement IDs, titles, tags, view names, actions. Results grouped by type: "Requirements", "Views", "Actions". Recent searches shown on empty query. Enter on result → navigate to that item in the appropriate view.
 
-**Table filters:**
-- Filter bar below topbar with chip-style active filters
-- Click "Filter" → dropdown with field selector → value selector
-- Multiple filters combine with AND logic
-- Active filters shown as removable chips: `Coverage: Uncovered ✕`
-- "Clear all filters" link when any filter is active
-- Filter state persists per-session for each view
+**Table filters:** Filter bar below topbar with chip-style active filters. Click "Filter" → dropdown with field selector → value selector. Multiple filters combine with AND logic. Active filters shown as removable chips: `Coverage: Uncovered ✕`. "Clear all filters" link when any filter is active. Filter state persists per-session for each view.
 
-**Graph filters:**
-- Sidebar filter panel with checkboxes for node types and link types
-- Coverage state toggle: show/hide covered, partial, uncovered nodes
-- Filters apply immediately without a confirm button
-- Active filter count shown as badge on filter panel header
+**Graph filters:** Sidebar filter panel with checkboxes for node types and link types. Coverage state toggle: show/hide covered, partial, uncovered nodes. Filters apply immediately without a confirm button. Active filter count shown as badge on filter panel header.
 
-**Rules:**
-- Search is always available via Cmd+K — no navigating to a "search page"
-- Filters never require a "submit" or "apply" button — they apply immediately
-- Active filters are always visible — user never wonders "why am I seeing this subset?"
-- Clearing all filters returns to the default view (all requirements, all node types)
-
-## Responsive Design & Accessibility
-
-### Responsive Strategy
-
-**Desktop-only — no mobile or tablet support in v1.**
-
-This product is used exclusively on desktop workstations during focused work sessions. No responsive breakpoints for mobile or tablet are defined or required.
-
-**Supported viewport range:**
-- Minimum: **1280px** width
-- Maximum: **1920px** width (content does not stretch beyond this; centered with side margins on wider screens)
-- Below 1280px: no layout adaptation — horizontal scroll is acceptable for unsupported viewports
-
-**Layout behavior within supported range:**
-- Sidebar: fixed 240px (collapsible to 48px)
-- Main content: fluid, fills remaining width (992px–1632px depending on sidebar state)
-- Dashboard KPI grid: 4 columns at all supported widths
-- Table: columns resize proportionally; horizontal scroll within table if columns exceed available width
-- Graph canvas: fills available main content area; zoom level adjusts automatically
-- Detail overlay: fixed 480px width, slides in from right, overlays main content
-
-**Browser support:**
-- Chrome (latest 2 versions)
-- Firefox (latest 2 versions)
-- Edge (latest 2 versions)
-- Safari (latest 2 versions)
-- No IE11 support
-
-### Accessibility Strategy
-
-**Compliance target: WCAG 2.1 Level AA**
-
-**Color and contrast:**
-- All text meets 4.5:1 contrast ratio against its background (normal text)
-- Large text (16px+ bold or 18px+ regular) meets 3:1 contrast ratio
-- Coverage status never communicated by color alone — always paired with icons or text labels
-- UI is fully usable in both light and dark modes at AA contrast
-- Tested against common color vision deficiencies (protanopia, deuteranopia, tritanopia)
-
-**Keyboard navigation:**
-- All interactive elements reachable via Tab key
-- Logical tab order follows visual layout (left-to-right, top-to-bottom)
-- Visible focus indicator on all focusable elements (2px indigo ring)
-- Skip-to-main-content link as first focusable element
-- View-specific shortcuts: Cmd+1/2/3 for view switching, Cmd+K for command palette
-- Esc closes overlays, cancels edits, dismisses toasts
-- Arrow keys navigate within components (table rows, tree nodes, graph nodes, menus)
-
-**Screen reader support:**
-- Semantic HTML5 elements (nav, main, aside, article, section)
-- ARIA landmarks for sidebar, main content, overlays
-- ARIA labels on all icon-only buttons and interactive elements
-- ARIA live regions for dynamic content (toast notifications, sync status changes, real-time coverage updates)
-- Data tables use proper `<th>` scope attributes and `<caption>` elements
-- Graph visualization provides a screen-reader-accessible text summary (node count, edge count, orphan count) via a dedicated command
-
-**Focus management:**
-- Detail overlay traps focus when open; Esc releases
-- Modal dialogs trap focus; Tab cycles within dialog
-- After overlay/dialog closes, focus returns to the triggering element
-- After toast auto-dismisses, focus is not disrupted
-- After view switch, focus moves to the main content area of the new view
-
-### Testing Strategy
-
-**Automated testing:**
-- axe-core integrated into CI pipeline — blocks merge on AA violations
-- Lighthouse accessibility audit on every build
-- Contrast ratio validation in Storybook for all component states and themes
-
-**Manual testing:**
-- Keyboard-only navigation test for all six user journeys
-- VoiceOver (macOS/Safari) screen reader testing
-- NVDA (Windows/Chrome) screen reader testing
-- Color blindness simulation testing (Sim Daltonism or similar)
-
-**Browser testing:**
-- Chrome, Firefox, Edge, Safari — latest 2 versions each
-- Viewport testing at 1280px (minimum) and 1920px (maximum)
-- Dark mode and light mode testing in all browsers
-
-### Implementation Guidelines
-
-**HTML structure:**
-- Use semantic elements: `<nav>` for sidebar, `<main>` for content area, `<aside>` for detail overlay
-- Use `<button>` for clickable actions, `<a>` for navigation links — never `<div>` with click handlers
-- Tables use `<table>`, `<thead>`, `<tbody>`, `<th>`, `<td>` — not CSS grid pretending to be a table
-- Headings follow logical hierarchy (h1 → h2 → h3) — never skip levels
-
-**CSS approach:**
-- Tailwind utility classes with design tokens (CSS custom properties)
-- `min-width: 1280px` assumed — no media queries for smaller viewports
-- `max-width: 1920px` on content container with `margin: 0 auto` for wider screens
-- `prefers-reduced-motion` media query disables all non-essential animations
-- `prefers-color-scheme` media query sets initial theme (user can override)
-
-**Component requirements:**
-- Every custom component must pass axe-core audit in Storybook
-- Every interactive component must document its keyboard interaction pattern
-- Every component with dynamic content must declare its ARIA live region strategy
-- Focus management must be tested for every component that opens/closes overlays
+**Rules:** Search is always available via Cmd+K — no navigating to a "search page". Filters never require a "submit" or "apply" button — they apply immediately. Active filters are always visible — user never wonders "why am I seeing this subset?" Clearing all filters returns to the default view (all requirements, all node types).

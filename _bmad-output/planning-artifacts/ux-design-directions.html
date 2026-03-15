@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RMT Design Directions — Requirements-management</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>RMT – Design Direction Exploration</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
 :root {
   --surface-primary: #ffffff;
@@ -22,9 +22,9 @@
   --status-uncovered: #f43f5e;
   --status-conflict: #eab308;
   --actor-agent: #14b8a6;
-  font-family: 'Inter', system-ui, sans-serif;
+  --font-ui: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
-
 .dark {
   --surface-primary: #020617;
   --surface-secondary: #0f172a;
@@ -35,1127 +35,528 @@
   --text-tertiary: #64748b;
   --accent-subtle: #1e1b4b;
 }
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  background: #0f172a;
-  color: #f1f5f9;
-  min-height: 100vh;
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: var(--font-ui); background: var(--surface-primary); color: var(--text-primary); }
+.controls {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  background: var(--surface-secondary); border-bottom: 1px solid var(--border-default);
+  padding: 12px 24px; display:flex; align-items:center; gap:16px;
+}
+.controls h1 { font-size:14px; font-weight:600; flex:1; }
+.controls button {
+  padding:6px 14px; border-radius:6px; font-size:12px; font-weight:500;
+  cursor:pointer; border:1px solid var(--border-default); background:var(--surface-primary);
+  color:var(--text-primary); font-family:var(--font-ui); transition:all .15s;
+}
+.controls button:hover { border-color:var(--accent-primary); color:var(--accent-primary); }
+.controls button.active { background:var(--accent-primary); color:#fff; border-color:var(--accent-primary); }
+.theme-toggle { cursor:pointer; padding:6px 12px; border-radius:6px; border:1px solid var(--border-default);
+  background:var(--surface-primary); color:var(--text-primary); font-size:12px; font-family:var(--font-ui); }
+.mockup-container { padding-top:56px; }
+.mockup { display:none; height:calc(100vh - 56px); overflow:hidden; }
+.mockup.active { display:flex; }
+.mockup-label {
+  position:absolute; bottom:16px; right:16px; background:var(--surface-tertiary);
+  padding:8px 16px; border-radius:8px; font-size:11px; color:var(--text-secondary);
+  border:1px solid var(--border-default); z-index:10;
 }
 
-.showcase-header {
-  padding: 32px 48px;
-  border-bottom: 1px solid #1e293b;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Shared component styles */
+.sidebar {
+  width:240px; min-width:240px; background:var(--surface-secondary);
+  border-right:1px solid var(--border-default); display:flex; flex-direction:column;
+  padding:12px 0; overflow-y:auto;
 }
-
-.showcase-header h1 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #f1f5f9;
-}
-
-.showcase-header p {
-  color: #94a3b8;
-  font-size: 14px;
-  margin-top: 4px;
-}
-
-.theme-toggle {
-  display: flex;
-  gap: 8px;
-}
-
-.theme-toggle button {
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: 1px solid #334155;
-  background: transparent;
-  color: #94a3b8;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 13px;
-  transition: all 0.2s;
-}
-
-.theme-toggle button.active {
-  background: #4f46e5;
-  border-color: #4f46e5;
-  color: white;
-}
-
-.nav-tabs {
-  display: flex;
-  gap: 0;
-  padding: 0 48px;
-  border-bottom: 1px solid #1e293b;
-  overflow-x: auto;
-}
-
-.nav-tab {
-  padding: 12px 20px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #64748b;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  white-space: nowrap;
-  transition: all 0.2s;
-  background: none;
-  border-top: none;
-  border-left: none;
-  border-right: none;
-  font-family: inherit;
-}
-
-.nav-tab:hover { color: #94a3b8; }
-.nav-tab.active { color: #4f46e5; border-bottom-color: #4f46e5; }
-
-.direction-panel {
-  display: none;
-  padding: 32px 48px;
-}
-
-.direction-panel.active { display: block; }
-
-.direction-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.direction-desc {
-  color: #94a3b8;
-  font-size: 14px;
-  margin-bottom: 24px;
-  max-width: 640px;
-  line-height: 1.5;
-}
-
-.mockup-frame {
-  border: 1px solid #334155;
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--surface-primary);
-  color: var(--text-primary);
-  min-height: 560px;
-  display: flex;
-}
-
-.mockup-frame.light-mock {
-  --surface-primary: #ffffff;
-  --surface-secondary: #f8fafc;
-  --surface-tertiary: #f1f5f9;
-  --border-default: #e2e8f0;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-tertiary: #94a3b8;
-  --accent-subtle: #eef2ff;
-}
-
-.mockup-frame.dark-mock {
-  --surface-primary: #020617;
-  --surface-secondary: #0f172a;
-  --surface-tertiary: #1e293b;
-  --border-default: #334155;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-tertiary: #64748b;
-  --accent-subtle: #1e1b4b;
-}
-
-/* Sidebar component */
-.mock-sidebar {
-  width: 240px;
-  min-width: 240px;
-  background: var(--surface-secondary);
-  border-right: 1px solid var(--border-default);
-  padding: 16px 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.mock-sidebar-narrow {
-  width: 56px;
-  min-width: 56px;
-}
-
-.sidebar-logo {
-  padding: 0 16px 16px;
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--accent-primary);
-  border-bottom: 1px solid var(--border-default);
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.sidebar-logo .dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--status-covered);
-}
-
-.sidebar-section {
-  padding: 8px 12px 4px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
 .sidebar-item {
-  padding: 6px 16px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.15s;
+  padding:6px 16px; font-size:13px; color:var(--text-secondary); cursor:pointer;
+  display:flex; align-items:center; gap:8px;
+}
+.sidebar-item:hover { background:var(--surface-tertiary); color:var(--text-primary); }
+.sidebar-item.active { background:var(--accent-subtle); color:var(--accent-primary); font-weight:500; }
+.sidebar-section { padding:8px 16px 4px; font-size:11px; font-weight:600; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:.5px; }
+.main { flex:1; overflow-y:auto; padding:24px; background:var(--surface-primary); }
+.topbar {
+  padding:12px 24px; border-bottom:1px solid var(--border-default);
+  display:flex; align-items:center; gap:12px; font-size:13px; background:var(--surface-primary);
+}
+.breadcrumb { color:var(--text-tertiary); font-size:12px; }
+.breadcrumb span { color:var(--text-primary); }
+.cmd-k {
+  margin-left:auto; padding:4px 10px; border:1px solid var(--border-default);
+  border-radius:6px; font-size:11px; color:var(--text-tertiary); font-family:var(--font-mono);
 }
 
-.sidebar-item:hover { background: var(--surface-tertiary); color: var(--text-primary); }
-.sidebar-item.active { background: var(--accent-subtle); color: var(--accent-primary); }
-
-.sidebar-item .badge {
-  margin-left: auto;
-  font-size: 11px;
-  padding: 1px 6px;
-  border-radius: 10px;
-  font-weight: 500;
-}
-
-.badge-red { background: #fef2f2; color: #dc2626; }
-.badge-amber { background: #fffbeb; color: #d97706; }
-.badge-green { background: #f0fdf4; color: #16a34a; }
-.badge-teal { background: #f0fdfa; color: #0d9488; }
-
-.dark-mock .badge-red { background: #450a0a; color: #fca5a5; }
-.dark-mock .badge-amber { background: #451a03; color: #fcd34d; }
-.dark-mock .badge-green { background: #052e16; color: #86efac; }
-.dark-mock .badge-teal { background: #042f2e; color: #5eead4; }
-
-.sidebar-sync {
-  margin-top: auto;
-  padding: 12px 16px;
-  border-top: 1px solid var(--border-default);
-  font-size: 11px;
-  color: var(--text-tertiary);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.sync-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--status-covered);
-}
-
-/* Main content */
-.mock-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.mock-topbar {
-  padding: 12px 24px;
-  border-bottom: 1px solid var(--border-default);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 13px;
-}
-
-.topbar-breadcrumb {
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.topbar-breadcrumb span { color: var(--text-tertiary); }
-
-.topbar-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.mock-btn {
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-family: inherit;
-  cursor: pointer;
-  border: 1px solid var(--border-default);
-  background: var(--surface-primary);
-  color: var(--text-secondary);
-  transition: all 0.15s;
-}
-
-.mock-btn:hover { background: var(--surface-tertiary); }
-
-.mock-btn-primary {
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
-  color: white;
-}
-
-.mock-btn-primary:hover { background: var(--accent-primary-hover); }
-
-.mock-content {
-  flex: 1;
-  padding: 24px;
-  overflow-y: auto;
-}
-
-/* KPI Cards */
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
+/* KPI Card */
+.kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
 .kpi-card {
-  background: var(--surface-tertiary);
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  padding: 16px;
+  background:var(--surface-tertiary); border:1px solid var(--border-default);
+  border-radius:8px; padding:16px; cursor:pointer; transition:all .15s;
 }
+.kpi-card:hover { border-color:var(--accent-primary); box-shadow:0 2px 8px rgba(0,0,0,.06); }
+.kpi-label { font-size:11px; font-weight:600; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+.kpi-value { font-size:28px; font-weight:700; line-height:36px; }
+.kpi-value.green { color:var(--status-covered); }
+.kpi-value.amber { color:var(--status-partial); }
+.kpi-value.red { color:var(--status-uncovered); }
+.kpi-sub { font-size:11px; color:var(--text-secondary); margin-top:2px; }
 
-.kpi-label {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
-}
+/* Status dot */
+.dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+.dot.green { background:var(--status-covered); }
+.dot.amber { background:var(--status-partial); }
+.dot.red { background:var(--status-uncovered); }
+.dot.yellow { background:var(--status-conflict); }
 
-.kpi-value {
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.kpi-sub {
-  font-size: 11px;
-  color: var(--text-tertiary);
-  margin-top: 4px;
-}
-
-/* Coverage ring */
-.coverage-ring {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  margin: 0 auto 8px;
-}
-
-.coverage-ring-value {
-  font-size: 32px;
-  font-weight: 700;
-}
-
-/* Panels */
-.panel {
-  background: var(--surface-tertiary);
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  margin-bottom: 16px;
-}
-
-.panel-header {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border-default);
-  font-size: 13px;
-  font-weight: 600;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.panel-body { padding: 12px 16px; }
-
-/* Table */
-.mock-table {
-  width: 100%;
-  font-size: 12px;
-  border-collapse: collapse;
-}
-
-.mock-table th {
-  text-align: left;
-  padding: 8px 12px;
-  font-weight: 500;
-  color: var(--text-tertiary);
-  border-bottom: 1px solid var(--border-default);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.mock-table td {
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border-default);
-  color: var(--text-secondary);
-}
-
-.mock-table tr:hover { background: var(--surface-secondary); }
-
-.req-id {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--accent-primary);
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-  margin-right: 6px;
-}
-
-.status-covered { background: var(--status-covered); }
-.status-partial { background: var(--status-partial); }
-.status-uncovered { background: var(--status-uncovered); }
+/* Data table */
+.data-table { width:100%; border-collapse:collapse; font-size:12px; }
+.data-table th { text-align:left; padding:8px 12px; border-bottom:2px solid var(--border-default); font-weight:600; font-size:11px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.3px; }
+.data-table td { padding:8px 12px; border-bottom:1px solid var(--border-default); }
+.data-table tr:hover { background:var(--surface-tertiary); cursor:pointer; }
+.req-id { font-family:var(--font-mono); font-size:11px; color:var(--accent-primary); }
 
 /* Activity feed */
-.activity-item {
-  display: flex;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border-default);
-  font-size: 12px;
-}
+.activity-item { display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--border-default); font-size:12px; }
+.avatar { width:28px; height:28px; border-radius:50%; background:var(--surface-tertiary); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:var(--text-secondary); flex-shrink:0; }
+.avatar.agent { border:2px solid var(--actor-agent); }
+.activity-text { color:var(--text-secondary); line-height:18px; }
+.activity-text strong { color:var(--text-primary); font-weight:500; }
+.activity-time { font-size:10px; color:var(--text-tertiary); margin-top:2px; }
 
-.activity-item:last-child { border-bottom: none; }
-
-.activity-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--surface-secondary);
-  border: 2px solid var(--border-default);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.activity-avatar.agent {
-  border-color: var(--actor-agent);
-  color: var(--actor-agent);
-}
-
-.activity-text { color: var(--text-secondary); line-height: 1.4; }
-.activity-text strong { color: var(--text-primary); font-weight: 500; }
-.activity-time { color: var(--text-tertiary); font-size: 11px; margin-top: 2px; }
-
-/* Graph mockup */
-.graph-canvas {
-  background: var(--surface-secondary);
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  height: 320px;
-  position: relative;
-  overflow: hidden;
-}
-
+/* Graph nodes */
+.graph-canvas { flex:1; position:relative; background:var(--surface-primary); overflow:hidden; }
 .graph-node {
-  position: absolute;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 500;
-  border: 2px solid;
-  background: var(--surface-primary);
-  white-space: nowrap;
-  cursor: pointer;
-  transition: transform 0.2s;
-  z-index: 2;
+  position:absolute; padding:8px 14px; border-radius:8px; border:2px solid var(--border-default);
+  background:var(--surface-tertiary); font-size:11px; cursor:pointer; transition:all .15s;
+  display:flex; align-items:center; gap:6px; white-space:nowrap;
 }
-
-.graph-node:hover { transform: scale(1.05); }
-
-.graph-node.req { border-color: var(--accent-primary); color: var(--accent-primary); }
-.graph-node.test-pass { border-color: var(--status-covered); color: var(--status-covered); }
-.graph-node.test-fail { border-color: var(--status-uncovered); color: var(--status-uncovered); }
-.graph-node.impl { border-color: var(--status-partial); color: var(--status-partial); }
-.graph-node.orphan { border-color: var(--status-uncovered); color: var(--status-uncovered); border-style: dashed; }
-
+.graph-node:hover { border-color:var(--accent-primary); box-shadow:0 4px 12px rgba(0,0,0,.1); z-index:5; }
+.graph-node.covered { border-color:var(--status-covered); }
+.graph-node.partial { border-color:var(--status-partial); }
+.graph-node.uncovered { border-color:var(--status-uncovered); }
+.graph-node .node-id { font-family:var(--font-mono); font-size:10px; color:var(--text-tertiary); }
 .graph-edge {
-  position: absolute;
-  height: 2px;
-  background: var(--border-default);
-  transform-origin: left center;
-  z-index: 1;
+  position:absolute; height:2px; background:var(--border-default); transform-origin:left center;
 }
 
-/* Split view */
-.split-view {
-  display: flex;
-  gap: 0;
-  height: 100%;
+/* Panel sections */
+.panel-header { font-size:16px; font-weight:600; margin-bottom:16px; }
+.panel-subheader { font-size:13px; font-weight:600; margin:16px 0 8px; color:var(--text-secondary); }
+.section-card { background:var(--surface-tertiary); border:1px solid var(--border-default); border-radius:8px; padding:16px; margin-bottom:16px; }
+
+/* Sync indicator */
+.sync-indicator { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-tertiary); padding:8px 16px; margin-top:auto; border-top:1px solid var(--border-default); }
+
+/* Tree items */
+.tree-item { padding:4px 0 4px 0; font-size:12px; display:flex; align-items:center; gap:6px; cursor:pointer; }
+.tree-item .indent { width:16px; display:inline-block; }
+.tree-toggle { color:var(--text-tertiary); font-size:10px; width:14px; text-align:center; }
+.tree-badge { font-size:10px; padding:1px 6px; border-radius:10px; margin-left:auto; font-weight:500; }
+.tree-badge.green { background:rgba(16,185,129,.15); color:var(--status-covered); }
+.tree-badge.red { background:rgba(244,63,94,.15); color:var(--status-uncovered); }
+.tree-badge.amber { background:rgba(245,158,11,.15); color:var(--status-partial); }
+
+/* Tabs */
+.tab-bar { display:flex; border-bottom:1px solid var(--border-default); margin-bottom:16px; }
+.tab { padding:8px 16px; font-size:12px; color:var(--text-secondary); cursor:pointer; border-bottom:2px solid transparent; font-weight:500; }
+.tab.active { color:var(--accent-primary); border-bottom-color:var(--accent-primary); }
+
+/* Detail overlay */
+.detail-overlay {
+  width:480px; min-width:480px; border-left:1px solid var(--border-default);
+  background:var(--surface-primary); overflow-y:auto; padding:20px;
 }
+.detail-header { display:flex; align-items:flex-start; gap:12px; margin-bottom:16px; }
+.detail-id { font-family:var(--font-mono); font-size:12px; color:var(--accent-primary); }
+.detail-title { font-size:16px; font-weight:600; }
+.detail-field { margin-bottom:12px; }
+.detail-field-label { font-size:11px; color:var(--text-tertiary); margin-bottom:2px; text-transform:uppercase; letter-spacing:.3px; }
+.detail-field-value { font-size:13px; }
 
-.split-left {
-  flex: 0.6;
-  border-right: 1px solid var(--border-default);
-  padding: 24px;
-  overflow-y: auto;
-}
+/* Chain item */
+.chain-item { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:6px; border:1px solid var(--border-default); margin-bottom:8px; font-size:12px; }
+.chain-item .chain-border { width:3px; height:32px; border-radius:2px; flex-shrink:0; }
+.chain-item .chain-border.green { background:var(--status-covered); }
+.chain-item .chain-border.red { background:var(--status-uncovered); }
+.chain-item .chain-border.amber { background:var(--status-partial); }
+.chain-dir { font-size:10px; color:var(--text-tertiary); width:14px; text-align:center; }
 
-.split-right {
-  flex: 0.4;
-  padding: 24px;
-  overflow-y: auto;
-  background: var(--surface-secondary);
-}
-
-/* Comparison grid */
-.compare-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-top: 24px;
-}
-
-.compare-card {
-  border: 1px solid #334155;
-  border-radius: 12px;
-  overflow: hidden;
-  transition: border-color 0.2s;
-  cursor: pointer;
-}
-
-.compare-card:hover { border-color: #4f46e5; }
-
-.compare-label {
-  padding: 12px 16px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #f1f5f9;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.compare-tags {
-  display: flex;
-  gap: 6px;
-}
-
-.compare-tag {
-  font-size: 10px;
-  padding: 2px 8px;
-  border-radius: 10px;
-  background: #1e293b;
-  color: #94a3b8;
-  font-weight: 400;
-}
-
-.direction-pros {
-  margin-top: 16px;
-  padding: 16px;
-  background: #1e293b;
-  border-radius: 8px;
-  font-size: 13px;
-  line-height: 1.6;
-  color: #94a3b8;
-}
-
-.direction-pros strong { color: #f1f5f9; }
+/* Kanban columns */
+.kanban-board { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; height:calc(100% - 60px); }
+.kanban-col { background:var(--surface-secondary); border-radius:8px; padding:12px; overflow-y:auto; }
+.kanban-col-header { font-size:12px; font-weight:600; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+.kanban-card { background:var(--surface-primary); border:1px solid var(--border-default); border-radius:6px; padding:10px; margin-bottom:8px; font-size:12px; cursor:pointer; }
+.kanban-card:hover { border-color:var(--accent-primary); }
+.kanban-card .card-id { font-family:var(--font-mono); font-size:10px; color:var(--text-tertiary); }
+.kanban-card .card-title { margin-top:4px; font-weight:500; }
+.kanban-card .card-meta { display:flex; gap:8px; margin-top:6px; font-size:10px; color:var(--text-tertiary); }
 </style>
 </head>
 <body>
-
-<div class="showcase-header">
-  <div>
-    <h1>RMT Design Directions</h1>
-    <p>6 visual approaches for Requirements-management — explore, compare, and choose</p>
-  </div>
-  <div class="theme-toggle">
-    <button class="active" onclick="setTheme('dark')">Dark</button>
-    <button onclick="setTheme('light')">Light</button>
-  </div>
+<div class="controls">
+  <h1>RMT — Design Direction Exploration</h1>
+  <button class="active" onclick="show(1)">1. Dashboard</button>
+  <button onclick="show(2)">2. Tree-First</button>
+  <button onclick="show(3)">3. Graph Explorer</button>
+  <button onclick="show(4)">4. Split Workbench</button>
+  <button onclick="show(5)">5. Table Dense</button>
+  <button onclick="show(6)">6. Kanban Board</button>
+  <button class="theme-toggle" onclick="toggleTheme()">Toggle Dark/Light</button>
 </div>
 
-<div class="nav-tabs">
-  <button class="nav-tab active" onclick="showDir(0)">1. Dashboard Command Center</button>
-  <button class="nav-tab" onclick="showDir(1)">2. Tree-First Navigator</button>
-  <button class="nav-tab" onclick="showDir(2)">3. Graph Explorer</button>
-  <button class="nav-tab" onclick="showDir(3)">4. Split-Panel Workbench</button>
-  <button class="nav-tab" onclick="showDir(4)">5. Table-Dense Operator</button>
-  <button class="nav-tab" onclick="showDir(5)">6. Kanban Coverage Board</button>
+<div class="mockup-container">
+
+<!-- DIRECTION 1: Dashboard Command Center -->
+<div class="mockup active" id="m1">
+  <div class="sidebar">
+    <div class="sidebar-section">Navigation</div>
+    <div class="sidebar-item active"><span>◉</span> Dashboard</div>
+    <div class="sidebar-item"><span>☰</span> Requirements</div>
+    <div class="sidebar-item"><span>◎</span> Graph</div>
+    <div class="sidebar-section">Projects</div>
+    <div class="sidebar-item"><span>▸</span> Auth Module</div>
+    <div class="sidebar-item"><span>▸</span> Payment Module</div>
+    <div class="sidebar-item"><span>▸</span> User Module</div>
+    <div class="sync-indicator"><span class="dot green"></span> Synced 12s ago · <span style="font-family:var(--font-mono)">a3f8c2d</span></div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+    <div class="topbar">
+      <div class="breadcrumb">Dashboard · <span>All Projects</span></div>
+      <div class="cmd-k">⌘K</div>
+    </div>
+    <div class="main">
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Coverage</div><div class="kpi-value green">73%</div><div class="kpi-sub">218 / 298 requirements</div></div>
+        <div class="kpi-card"><div class="kpi-label">Orphaned</div><div class="kpi-value red">14</div><div class="kpi-sub">No downstream links</div></div>
+        <div class="kpi-card"><div class="kpi-label">Sync Health</div><div class="kpi-value green">OK</div><div class="kpi-sub">2 pending · 0 conflicts</div></div>
+        <div class="kpi-card"><div class="kpi-label">Agent Activity</div><div class="kpi-value" style="color:var(--actor-agent)">7</div><div class="kpi-sub">Changes today</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="section-card">
+          <div class="panel-subheader" style="margin-top:0">Uncovered Requirements</div>
+          <table class="data-table">
+            <thead><tr><th>ID</th><th>Title</th><th>Module</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><span class="req-id">FR-042</span></td><td>Saved views</td><td>Search</td><td><span class="dot red"></span></td></tr>
+              <tr><td><span class="req-id">FR-016</span></td><td>Multi-level chains</td><td>Traceability</td><td><span class="dot red"></span></td></tr>
+              <tr><td><span class="req-id">FR-060</span></td><td>Schema validation</td><td>Ingestion</td><td><span class="dot red"></span></td></tr>
+              <tr><td><span class="req-id">AI-006</span></td><td>Clarification request</td><td>AI Agent</td><td><span class="dot red"></span></td></tr>
+              <tr><td><span class="req-id">FR-023</span></td><td>Baseline comparison</td><td>Versioning</td><td><span class="dot amber"></span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="section-card">
+          <div class="panel-subheader" style="margin-top:0">Recent Activity</div>
+          <div class="activity-item"><div class="avatar agent">A1</div><div><div class="activity-text"><strong>AGENT-01</strong> updated FR-054 via PR #127</div><div class="activity-time">3 minutes ago</div></div></div>
+          <div class="activity-item"><div class="avatar">PS</div><div><div class="activity-text"><strong>Parker</strong> created traceability link FR-010 → TC-045</div><div class="activity-time">12 minutes ago</div></div></div>
+          <div class="activity-item"><div class="avatar">SM</div><div><div class="activity-text"><strong>Sam</strong> locked baseline "v2.1-release"</div><div class="activity-time">1 hour ago</div></div></div>
+          <div class="activity-item"><div class="avatar agent">A2</div><div><div class="activity-text"><strong>AGENT-03</strong> flagged clarification on AI-006</div><div class="activity-time">2 hours ago</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="mockup-label">Direction 1: Dashboard Command Center</div>
 </div>
 
-<!-- Direction 1: Dashboard Command Center -->
-<div class="direction-panel active" id="dir-0">
-  <h2 class="direction-title">Direction 1: Dashboard Command Center</h2>
-  <p class="direction-desc">Coverage dashboard dominates the home screen with KPI panels, a coverage ring, activity feed, and recent changes. Sidebar provides navigation. Grafana-inspired layout with one-click drill-down.</p>
-
-  <div class="mockup-frame dark-mock">
-    <div class="mock-sidebar">
-      <div class="sidebar-logo"><span class="dot"></span> RMT</div>
-      <div class="sidebar-section">Navigation</div>
-      <div class="sidebar-item active">Dashboard</div>
-      <div class="sidebar-item">Requirements</div>
-      <div class="sidebar-item">Traceability Graph</div>
-      <div class="sidebar-item">Baselines</div>
-      <div class="sidebar-section">Project</div>
-      <div class="sidebar-item">Auth Module <span class="badge badge-green">94%</span></div>
-      <div class="sidebar-item">Payment Module <span class="badge badge-amber">67%</span></div>
-      <div class="sidebar-item">User Module <span class="badge badge-red">42%</span></div>
-      <div class="sidebar-sync"><span class="sync-dot"></span> Synced 12s ago · abc1234</div>
+<!-- DIRECTION 2: Tree-First Navigator -->
+<div class="mockup" id="m2">
+  <div class="sidebar" style="width:300px;min-width:300px;">
+    <div class="sidebar-section">Project Tree</div>
+    <div style="padding:4px 16px;">
+      <div class="tree-item"><span class="tree-toggle">▾</span> <strong>Auth Module</strong> <span class="tree-badge green">92%</span></div>
+      <div class="tree-item"><span class="indent"></span><span class="tree-toggle">▾</span> Requirement Authoring <span class="tree-badge green">100%</span></div>
+      <div class="tree-item"><span class="indent"></span><span class="indent"></span> <span class="dot green"></span> <span class="req-id">FR-001</span> Create requirement <span class="tree-badge green">✓</span></div>
+      <div class="tree-item"><span class="indent"></span><span class="indent"></span> <span class="dot green"></span> <span class="req-id">FR-002</span> Custom metadata <span class="tree-badge green">✓</span></div>
+      <div class="tree-item"><span class="indent"></span><span class="indent"></span> <span class="dot green"></span> <span class="req-id">FR-003</span> Hierarchy org <span class="tree-badge green">✓</span></div>
+      <div class="tree-item"><span class="indent"></span><span class="tree-toggle">▾</span> Traceability <span class="tree-badge amber">75%</span></div>
+      <div class="tree-item"><span class="indent"></span><span class="indent"></span> <span class="dot green"></span> <span class="req-id">FR-010</span> Bidi links <span class="tree-badge green">✓</span></div>
+      <div class="tree-item"><span class="indent"></span><span class="indent"></span> <span class="dot green"></span> <span class="req-id">FR-011</span> Trace matrix <span class="tree-badge green">✓</span></div>
+      <div class="tree-item"><span class="indent"></span><span class="indent"></span> <span class="dot red"></span> <span class="req-id">FR-016</span> Multi-level chains <span class="tree-badge red">✗</span></div>
+      <div class="tree-item"><span class="tree-toggle">▸</span> Payment Module <span class="tree-badge red">45%</span></div>
+      <div class="tree-item"><span class="tree-toggle">▸</span> User Module <span class="tree-badge amber">68%</span></div>
+      <div class="tree-item"><span class="tree-toggle">▸</span> Ingestion Pipeline <span class="tree-badge green">88%</span></div>
     </div>
-    <div class="mock-main">
-      <div class="mock-topbar">
-        <div class="topbar-breadcrumb">Dashboard <span>·</span> All Projects</div>
-        <div class="topbar-actions">
-          <button class="mock-btn">⌘K</button>
-          <button class="mock-btn">Export</button>
-        </div>
+    <div class="sync-indicator"><span class="dot green"></span> Synced 12s ago · <span style="font-family:var(--font-mono)">a3f8c2d</span></div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+    <div class="topbar">
+      <div class="breadcrumb">Auth Module · Traceability · <span>FR-016</span></div>
+      <div class="cmd-k">⌘K</div>
+    </div>
+    <div style="flex:1;display:flex;overflow:hidden">
+      <div class="main" style="flex:1;">
+        <div class="detail-id">FR-016</div>
+        <div class="detail-title" style="margin-bottom:16px;">Multi-level traceability chains</div>
+        <div class="tab-bar"><div class="tab active">Details</div><div class="tab">Traceability</div><div class="tab">History</div><div class="tab">Activity</div></div>
+        <div class="detail-field"><div class="detail-field-label">Status</div><div class="detail-field-value"><span class="dot red"></span> Uncovered</div></div>
+        <div class="detail-field"><div class="detail-field-label">Priority</div><div class="detail-field-value">P2</div></div>
+        <div class="detail-field"><div class="detail-field-label">Description</div><div class="detail-field-value" style="line-height:20px;">Users can view multi-level traceability chains across stakeholder needs, system requirements, software requirements, test evidence, and release records.</div></div>
+        <div class="detail-field"><div class="detail-field-label">Sync Status</div><div class="detail-field-value"><span class="dot green"></span> In sync · <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary)">a3f8c2d</span></div></div>
       </div>
-      <div class="mock-content">
-        <div class="kpi-grid">
-          <div class="kpi-card" style="text-align: center;">
-            <div class="kpi-label">Overall Coverage</div>
-            <div class="kpi-value" style="color: var(--status-partial);">73%</div>
-            <div class="kpi-sub">218 / 298 requirements</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Orphaned</div>
-            <div class="kpi-value" style="color: var(--status-uncovered);">14</div>
-            <div class="kpi-sub">No downstream links</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Sync Health</div>
-            <div class="kpi-value" style="color: var(--status-covered);">OK</div>
-            <div class="kpi-sub">Last: 12s ago</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Agent Activity</div>
-            <div class="kpi-value" style="color: var(--actor-agent);">7</div>
-            <div class="kpi-sub">Changes today</div>
-          </div>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-          <div class="panel">
-            <div class="panel-header">Uncovered Requirements <span style="color: var(--status-uncovered); font-size: 12px;">14 items</span></div>
-            <div class="panel-body">
-              <table class="mock-table">
-                <tr><td><span class="req-id">FR-042</span></td><td>Saved views</td><td><span class="status-dot status-uncovered"></span>No test</td></tr>
-                <tr><td><span class="req-id">FR-043</span></td><td>Dependency graph nav</td><td><span class="status-dot status-uncovered"></span>No test</td></tr>
-                <tr><td><span class="req-id">AI-006</span></td><td>Clarification requests</td><td><span class="status-dot status-uncovered"></span>No impl</td></tr>
-                <tr><td><span class="req-id">FR-061</span></td><td>File move preservation</td><td><span class="status-dot status-partial"></span>Partial</td></tr>
-              </table>
-            </div>
-          </div>
-          <div class="panel">
-            <div class="panel-header">Recent Activity</div>
-            <div class="panel-body">
-              <div class="activity-item">
-                <div class="activity-avatar agent">A1</div>
-                <div><div class="activity-text"><strong>AGENT-01</strong> updated FR-055 via PR #127</div><div class="activity-time">3 min ago</div></div>
-              </div>
-              <div class="activity-item">
-                <div class="activity-avatar">AS</div>
-                <div><div class="activity-text"><strong>Andrei</strong> created baseline "v0.3 Draft"</div><div class="activity-time">1 hour ago</div></div>
-              </div>
-              <div class="activity-item">
-                <div class="activity-avatar agent">A2</div>
-                <div><div class="activity-text"><strong>AGENT-02</strong> flagged clarification on AI-003</div><div class="activity-time">2 hours ago</div></div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div style="width:320px;min-width:320px;border-left:1px solid var(--border-default);padding:20px;overflow-y:auto;background:var(--surface-secondary);">
+        <div class="panel-subheader" style="margin-top:0;">Traceability Chain</div>
+        <div class="chain-item"><div class="chain-border green"></div><div class="chain-dir">↑</div><div><div class="req-id">FR-010</div><div>Bidirectional links</div></div></div>
+        <div class="chain-item" style="border-color:var(--accent-primary);background:var(--accent-subtle);"><div class="chain-border red"></div><div class="chain-dir">●</div><div><div class="req-id">FR-016</div><div><strong>Multi-level chains</strong></div></div></div>
+        <div style="text-align:center;padding:8px;color:var(--text-tertiary);font-size:11px;">No downstream items linked</div>
       </div>
     </div>
   </div>
-
-  <div class="direction-pros">
-    <strong>Strengths:</strong> Maximum coverage visibility at a glance. Direct alignment with "coverage is the heartbeat" principle. Activity feed shows agent/human changes side by side. One-click drill-down from any KPI.<br>
-    <strong>Best for:</strong> Product Owners and AI SDLC Managers who check coverage status daily.
-  </div>
+  <div class="mockup-label">Direction 2: Tree-First Navigator</div>
 </div>
 
-<!-- Direction 2: Tree-First Navigator -->
-<div class="direction-panel" id="dir-1">
-  <h2 class="direction-title">Direction 2: Tree-First Navigator</h2>
-  <p class="direction-desc">Requirement hierarchy tree dominates the left panel. Coverage indicators are inline badges on every tree node. Clicking a node reveals details + traceability chain on the right. Notion-inspired navigation.</p>
-
-  <div class="mockup-frame dark-mock">
-    <div class="mock-sidebar" style="width: 320px; min-width: 320px;">
-      <div class="sidebar-logo"><span class="dot"></span> RMT</div>
-      <div style="padding: 8px 12px;">
-        <div class="mock-btn" style="width: 100%; text-align: left; color: var(--text-tertiary);">⌘K Search requirements...</div>
-      </div>
-      <div class="sidebar-section">Project: RMT Application</div>
-      <div class="sidebar-item" style="font-weight: 600;">▾ Functional Requirements <span class="badge badge-amber">67%</span></div>
-      <div class="sidebar-item" style="padding-left: 32px;">▾ Authoring & Management <span class="badge badge-green">89%</span></div>
-      <div class="sidebar-item" style="padding-left: 48px;">FR-001 Create requirements <span class="badge badge-green">✓</span></div>
-      <div class="sidebar-item" style="padding-left: 48px;">FR-002 Custom metadata <span class="badge badge-green">✓</span></div>
-      <div class="sidebar-item active" style="padding-left: 48px;">FR-003 Hierarchical tree <span class="badge badge-amber">◐</span></div>
-      <div class="sidebar-item" style="padding-left: 48px;">FR-004 Stable IDs <span class="badge badge-green">✓</span></div>
-      <div class="sidebar-item" style="padding-left: 32px;">▸ Traceability <span class="badge badge-green">85%</span></div>
-      <div class="sidebar-item" style="padding-left: 32px;">▸ Versioning & Audit <span class="badge badge-red">42%</span></div>
-      <div class="sidebar-item" style="padding-left: 32px;">▸ Repo Ingestion <span class="badge badge-green">92%</span></div>
-      <div class="sidebar-item" style="font-weight: 600;">▸ Non-Functional Requirements <span class="badge badge-amber">71%</span></div>
-      <div class="sidebar-item" style="font-weight: 600;">▸ AI Agent Requirements <span class="badge badge-amber">63%</span></div>
-      <div class="sidebar-sync"><span class="sync-dot"></span> Synced 12s ago</div>
+<!-- DIRECTION 3: Graph Explorer -->
+<div class="mockup" id="m3">
+  <div class="sidebar" style="width:200px;min-width:200px;">
+    <div class="sidebar-section">Views</div>
+    <div class="sidebar-item"><span>◉</span> Dashboard</div>
+    <div class="sidebar-item"><span>☰</span> Table</div>
+    <div class="sidebar-item active"><span>◎</span> Graph</div>
+    <div class="sidebar-section">Filters</div>
+    <div style="padding:4px 16px;font-size:11px;">
+      <div style="margin-bottom:8px;"><label style="display:flex;align-items:center;gap:6px;color:var(--text-secondary);cursor:pointer;"><input type="checkbox" checked> Requirements</label></div>
+      <div style="margin-bottom:8px;"><label style="display:flex;align-items:center;gap:6px;color:var(--text-secondary);cursor:pointer;"><input type="checkbox" checked> Implementation</label></div>
+      <div style="margin-bottom:8px;"><label style="display:flex;align-items:center;gap:6px;color:var(--text-secondary);cursor:pointer;"><input type="checkbox" checked> Test Cases</label></div>
+      <div style="margin-bottom:8px;"><label style="display:flex;align-items:center;gap:6px;color:var(--text-secondary);cursor:pointer;"><input type="checkbox" checked> Test Results</label></div>
+      <div style="margin-top:16px;margin-bottom:8px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.3px;font-size:10px;">Coverage</div>
+      <div style="margin-bottom:8px;"><label style="display:flex;align-items:center;gap:6px;color:var(--text-secondary);cursor:pointer;"><input type="checkbox" checked> <span class="dot green"></span> Covered</label></div>
+      <div style="margin-bottom:8px;"><label style="display:flex;align-items:center;gap:6px;color:var(--text-secondary);cursor:pointer;"><input type="checkbox" checked> <span class="dot amber"></span> Partial</label></div>
+      <div style="margin-bottom:8px;"><label style="display:flex;align-items:center;gap:6px;color:var(--text-secondary);cursor:pointer;"><input type="checkbox" checked> <span class="dot red"></span> Uncovered</label></div>
     </div>
-    <div class="mock-main">
-      <div class="mock-topbar">
-        <div class="topbar-breadcrumb">Functional <span>›</span> Authoring <span>›</span> <strong>FR-003</strong></div>
-        <div class="topbar-actions">
-          <button class="mock-btn">History</button>
-          <button class="mock-btn-primary mock-btn">Edit</button>
-        </div>
+    <div class="sync-indicator"><span class="dot green"></span> Synced 12s ago</div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+    <div class="topbar">
+      <div class="breadcrumb">Graph · <span>Centered on FR-010</span></div>
+      <div style="display:flex;gap:8px;margin-left:auto;">
+        <button style="padding:4px 10px;border:1px solid var(--border-default);border-radius:4px;font-size:11px;background:var(--surface-primary);color:var(--text-secondary);cursor:pointer;font-family:var(--font-ui);">Zoom to Fit</button>
+        <button style="padding:4px 10px;border:1px solid var(--border-default);border-radius:4px;font-size:11px;background:var(--surface-primary);color:var(--text-secondary);cursor:pointer;font-family:var(--font-ui);">Show Orphans</button>
+        <button style="padding:4px 10px;border:1px solid var(--border-default);border-radius:4px;font-size:11px;background:var(--surface-primary);color:var(--text-secondary);cursor:pointer;font-family:var(--font-ui);">Path Finder</button>
       </div>
-      <div class="mock-content" style="display: flex; gap: 0; padding: 0;">
-        <div style="flex: 0.6; padding: 24px; border-right: 1px solid var(--border-default);">
-          <div style="font-size: 11px; color: var(--accent-primary); font-family: 'JetBrains Mono', monospace; margin-bottom: 8px;">FR-003</div>
-          <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">Hierarchical requirement organization</h3>
-          <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">Requirements shall be organized in a hierarchical tree (projects > modules > requirements > sub-requirements) with drag-and-drop reordering.</p>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12px;">
-            <div><span style="color: var(--text-tertiary);">Status:</span> <span style="color: var(--status-covered);">Active</span></div>
-            <div><span style="color: var(--text-tertiary);">Priority:</span> P0</div>
-            <div><span style="color: var(--text-tertiary);">Type:</span> Functional</div>
-            <div><span style="color: var(--text-tertiary);">Coverage:</span> <span style="color: var(--status-partial);">Partial</span></div>
-            <div><span style="color: var(--text-tertiary);">Sync:</span> <span style="color: var(--status-covered);">In sync</span></div>
-            <div><span style="color: var(--text-tertiary);">Last commit:</span> <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px;">e4f2a1b</span></div>
-          </div>
-        </div>
-        <div style="flex: 0.4; padding: 24px; background: var(--surface-secondary);">
-          <div style="font-size: 13px; font-weight: 600; margin-bottom: 16px;">Traceability Chain</div>
-          <div style="font-size: 12px;">
-            <div style="padding: 8px; background: var(--surface-tertiary); border-radius: 6px; margin-bottom: 8px; border-left: 3px solid var(--accent-primary);">↑ SYS-REQ-001 <span style="color: var(--text-tertiary);">derives-from</span></div>
-            <div style="padding: 8px; background: var(--accent-subtle); border-radius: 6px; margin-bottom: 8px; border-left: 3px solid var(--accent-primary); font-weight: 600;">● FR-003 <span style="color: var(--status-partial);">◐ Partial</span></div>
-            <div style="padding: 8px; background: var(--surface-tertiary); border-radius: 6px; margin-bottom: 8px; border-left: 3px solid var(--status-covered);">↓ GH-Issue #84 <span style="color: var(--status-covered);">✓ Closed</span></div>
-            <div style="padding: 8px; background: var(--surface-tertiary); border-radius: 6px; margin-bottom: 8px; border-left: 3px solid var(--status-covered);">↓ TC-FR003-01 <span style="color: var(--status-covered);">✓ Pass</span></div>
-            <div style="padding: 8px; background: var(--surface-tertiary); border-radius: 6px; border-left: 3px solid var(--status-uncovered);">↓ TC-FR003-02 <span style="color: var(--status-uncovered);">✗ No run</span></div>
-          </div>
+      <div class="cmd-k">⌘K</div>
+    </div>
+    <div class="graph-canvas">
+      <div class="graph-node covered" style="top:50%;left:40%;transform:translate(-50%,-50%);border-width:3px;box-shadow:0 0 0 4px rgba(79,70,229,.2);">
+        <span class="dot green"></span>
+        <span class="node-id">FR-010</span>
+        Bidirectional traceability links
+      </div>
+      <div class="graph-node covered" style="top:20%;left:25%;">
+        <span class="dot green"></span>
+        <span class="node-id">SN-003</span>
+        Coverage visibility
+      </div>
+      <div class="graph-node covered" style="top:20%;left:55%;">
+        <span class="dot green"></span>
+        <span class="node-id">FR-011</span>
+        Traceability matrix
+      </div>
+      <div class="graph-node uncovered" style="top:35%;left:70%;">
+        <span class="dot red"></span>
+        <span class="node-id">FR-016</span>
+        Multi-level chains
+      </div>
+      <div class="graph-node covered" style="top:65%;left:20%;">
+        <span class="dot green"></span>
+        <span class="node-id">IMPL-022</span>
+        LinkService.create()
+      </div>
+      <div class="graph-node covered" style="top:65%;left:55%;">
+        <span class="dot green"></span>
+        <span class="node-id">TC-045</span>
+        Test: bidi link creation
+      </div>
+      <div class="graph-node partial" style="top:80%;left:38%;">
+        <span class="dot amber"></span>
+        <span class="node-id">TR-088</span>
+        Test run 2026-03-14
+      </div>
+      <div class="graph-node" style="top:50%;left:85%;border-style:dashed;opacity:.6;">
+        <span class="dot red"></span>
+        <span class="node-id">FR-043</span>
+        Visual dependency graph
+      </div>
+      <!-- Legend -->
+      <div style="position:absolute;bottom:16px;left:16px;background:var(--surface-secondary);border:1px solid var(--border-default);border-radius:8px;padding:12px;font-size:10px;">
+        <div style="font-weight:600;margin-bottom:6px;color:var(--text-secondary);">Legend</div>
+        <div style="display:flex;gap:12px;">
+          <div style="display:flex;align-items:center;gap:4px;"><span class="dot green"></span> Covered</div>
+          <div style="display:flex;align-items:center;gap:4px;"><span class="dot amber"></span> Partial</div>
+          <div style="display:flex;align-items:center;gap:4px;"><span class="dot red"></span> Uncovered</div>
+          <div style="display:flex;align-items:center;gap:4px;"><span style="width:16px;border-top:2px dashed var(--border-default);"></span> Orphan</div>
         </div>
       </div>
     </div>
   </div>
-
-  <div class="direction-pros">
-    <strong>Strengths:</strong> Requirement hierarchy is always visible. Coverage indicators on every tree node provide instant context. Split view shows detail + traceability without navigation. Familiar to Notion/file-tree users.<br>
-    <strong>Best for:</strong> Business Analysts who navigate and author requirements frequently.
-  </div>
+  <div class="mockup-label">Direction 3: Graph Explorer</div>
 </div>
 
-<!-- Direction 3: Graph Explorer -->
-<div class="direction-panel" id="dir-2">
-  <h2 class="direction-title">Direction 3: Graph Explorer</h2>
-  <p class="direction-desc">Traceability graph is the primary view. Requirements, tests, and implementation items are nodes. Coverage state colors each node. Click to expand connections. Neo4j-inspired with coverage overlays.</p>
-
-  <div class="mockup-frame dark-mock">
-    <div class="mock-sidebar">
-      <div class="sidebar-logo"><span class="dot"></span> RMT</div>
-      <div class="sidebar-section">Views</div>
-      <div class="sidebar-item">Dashboard</div>
-      <div class="sidebar-item">Requirements</div>
-      <div class="sidebar-item active">Traceability Graph</div>
-      <div class="sidebar-item">Baselines</div>
-      <div class="sidebar-section">Filters</div>
-      <div class="sidebar-item"><span class="status-dot status-covered"></span> Covered (218)</div>
-      <div class="sidebar-item"><span class="status-dot status-partial"></span> Partial (66)</div>
-      <div class="sidebar-item"><span class="status-dot status-uncovered"></span> Uncovered (14)</div>
-      <div class="sidebar-section">Node Types</div>
-      <div class="sidebar-item">☑ Requirements</div>
-      <div class="sidebar-item">☑ Test Cases</div>
-      <div class="sidebar-item">☑ GitHub Issues</div>
-      <div class="sidebar-sync"><span class="sync-dot"></span> Synced 12s ago</div>
+<!-- DIRECTION 4: Split-Panel Workbench -->
+<div class="mockup" id="m4">
+  <div class="sidebar" style="width:48px;min-width:48px;align-items:center;padding:12px 0;">
+    <div class="sidebar-item" style="padding:8px;justify-content:center;" title="Dashboard">◉</div>
+    <div class="sidebar-item active" style="padding:8px;justify-content:center;" title="Requirements">☰</div>
+    <div class="sidebar-item" style="padding:8px;justify-content:center;" title="Graph">◎</div>
+    <div style="margin-top:auto;padding:8px;text-align:center;"><span class="dot green" title="Synced"></span></div>
+  </div>
+  <div style="width:320px;min-width:320px;border-right:1px solid var(--border-default);display:flex;flex-direction:column;overflow:hidden;">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border-default);display:flex;align-items:center;gap:8px;">
+      <input type="text" placeholder="Filter requirements..." style="flex:1;padding:6px 10px;border:1px solid var(--border-default);border-radius:6px;font-size:12px;background:var(--surface-primary);color:var(--text-primary);font-family:var(--font-ui);outline:none;">
     </div>
-    <div class="mock-main">
-      <div class="mock-topbar">
-        <div class="topbar-breadcrumb">Traceability Graph <span>·</span> Centered on FR-010</div>
-        <div class="topbar-actions">
-          <button class="mock-btn">Zoom to fit</button>
-          <button class="mock-btn">Show orphans</button>
-          <button class="mock-btn">Path finder</button>
-        </div>
+    <div style="overflow-y:auto;flex:1;">
+      <div style="padding:10px 16px;border-bottom:1px solid var(--border-default);cursor:pointer;background:var(--accent-subtle);">
+        <div style="display:flex;align-items:center;gap:6px;"><span class="dot green"></span><span class="req-id">FR-010</span></div>
+        <div style="font-size:13px;font-weight:500;margin-top:2px;">Bidirectional traceability links</div>
+        <div style="font-size:10px;color:var(--text-tertiary);margin-top:4px;">Traceability · P0 · 4 links</div>
       </div>
-      <div class="mock-content" style="padding: 0; position: relative;">
-        <div class="graph-canvas" style="height: 100%; border-radius: 0; border: none;">
-          <div class="graph-node req" style="top: 40px; left: 80px;">SYS-REQ-001</div>
-          <div class="graph-node req" style="top: 120px; left: 200px; border-width: 3px; box-shadow: 0 0 0 4px rgba(79,70,229,0.2);">FR-010 Traceability Links</div>
-          <div class="graph-node req" style="top: 120px; left: 480px;">FR-011 Live Matrix</div>
-          <div class="graph-node test-pass" style="top: 220px; left: 120px;">TC-010-01 ✓</div>
-          <div class="graph-node test-pass" style="top: 220px; left: 280px;">TC-010-02 ✓</div>
-          <div class="graph-node test-fail" style="top: 220px; left: 440px;">TC-010-03 ✗</div>
-          <div class="graph-node impl" style="top: 40px; left: 400px;">GH #91 In Progress</div>
-          <div class="graph-node orphan" style="top: 300px; left: 600px;">FR-042 (orphan)</div>
-          <div class="graph-node req" style="top: 40px; left: 620px;">FR-012 Orphan Detection</div>
-          <div class="graph-node test-pass" style="top: 300px; left: 140px;">TC-011-01 ✓</div>
-          <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
-            <line x1="150" y1="60" x2="250" y2="130" stroke="#334155" stroke-width="2"/>
-            <line x1="380" y1="140" x2="480" y2="140" stroke="#334155" stroke-width="2"/>
-            <line x1="280" y1="150" x2="180" y2="220" stroke="#334155" stroke-width="2"/>
-            <line x1="320" y1="150" x2="340" y2="220" stroke="#334155" stroke-width="2"/>
-            <line x1="360" y1="150" x2="490" y2="220" stroke="#334155" stroke-width="2"/>
-            <line x1="450" y1="60" x2="350" y2="120" stroke="#334155" stroke-width="2"/>
-            <line x1="530" y1="150" x2="200" y2="310" stroke="#334155" stroke-width="2" stroke-dasharray="6"/>
-            <line x1="680" y1="60" x2="660" y2="300" stroke="#334155" stroke-width="2" stroke-dasharray="6"/>
-          </svg>
-        </div>
-        <div style="position: absolute; bottom: 16px; left: 16px; display: flex; gap: 12px; font-size: 11px; background: var(--surface-tertiary); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-default);">
-          <span><span class="status-dot" style="background: var(--accent-primary);"></span> Requirement</span>
-          <span><span class="status-dot status-covered"></span> Test Pass</span>
-          <span><span class="status-dot status-uncovered"></span> Test Fail</span>
-          <span><span class="status-dot status-partial"></span> Implementation</span>
-          <span style="border-left: 1px dashed var(--status-uncovered); padding-left: 8px; color: var(--status-uncovered);">⬡ Orphan</span>
-        </div>
+      <div style="padding:10px 16px;border-bottom:1px solid var(--border-default);cursor:pointer;">
+        <div style="display:flex;align-items:center;gap:6px;"><span class="dot green"></span><span class="req-id">FR-011</span></div>
+        <div style="font-size:13px;font-weight:500;margin-top:2px;">Live traceability matrix</div>
+        <div style="font-size:10px;color:var(--text-tertiary);margin-top:4px;">Traceability · P0 · 3 links</div>
+      </div>
+      <div style="padding:10px 16px;border-bottom:1px solid var(--border-default);cursor:pointer;">
+        <div style="display:flex;align-items:center;gap:6px;"><span class="dot red"></span><span class="req-id">FR-016</span></div>
+        <div style="font-size:13px;font-weight:500;margin-top:2px;">Multi-level traceability chains</div>
+        <div style="font-size:10px;color:var(--text-tertiary);margin-top:4px;">Traceability · P2 · 0 links</div>
+      </div>
+      <div style="padding:10px 16px;border-bottom:1px solid var(--border-default);cursor:pointer;">
+        <div style="display:flex;align-items:center;gap:6px;"><span class="dot green"></span><span class="req-id">FR-053</span></div>
+        <div style="font-size:13px;font-weight:500;margin-top:2px;">Repository folder config</div>
+        <div style="font-size:10px;color:var(--text-tertiary);margin-top:4px;">Ingestion · P0 · 2 links</div>
+      </div>
+      <div style="padding:10px 16px;border-bottom:1px solid var(--border-default);cursor:pointer;">
+        <div style="display:flex;align-items:center;gap:6px;"><span class="dot amber"></span><span class="req-id">FR-058</span></div>
+        <div style="font-size:13px;font-weight:500;margin-top:2px;">Ingestion conflict inspection</div>
+        <div style="font-size:10px;color:var(--text-tertiary);margin-top:4px;">Ingestion · P0 · 1 link</div>
       </div>
     </div>
   </div>
-
-  <div class="direction-pros">
-    <strong>Strengths:</strong> Traceability relationships are immediately visible. Coverage state is color-coded on every node. Orphans stand out visually. Path-finding helps trace from stakeholder need to test. Interactive exploration feels powerful.<br>
-    <strong>Best for:</strong> Impact analysis, understanding relationships, audit demonstrations. All three personas benefit from this view.
+  <div class="detail-overlay" style="flex:1;min-width:0;">
+    <div class="detail-id">FR-010</div>
+    <div class="detail-title">Bidirectional traceability links</div>
+    <div class="tab-bar" style="margin-top:16px;"><div class="tab active">Details</div><div class="tab">Traceability</div><div class="tab">History</div><div class="tab">Activity</div></div>
+    <div class="detail-field"><div class="detail-field-label">Status</div><div class="detail-field-value"><span class="dot green"></span> Covered</div></div>
+    <div class="detail-field"><div class="detail-field-label">Type</div><div class="detail-field-value">Functional Requirement</div></div>
+    <div class="detail-field"><div class="detail-field-label">Priority</div><div class="detail-field-value">P0</div></div>
+    <div class="detail-field"><div class="detail-field-label">Module</div><div class="detail-field-value">Traceability</div></div>
+    <div class="detail-field"><div class="detail-field-label">Source Journeys</div><div class="detail-field-value">J-01, J-02, J-03, J-04, J-05</div></div>
+    <div class="detail-field"><div class="detail-field-label">Description</div><div class="detail-field-value" style="line-height:20px;">Users can create bidirectional traceability links between requirements, other requirements, implementation items, test cases, test results, and release artifacts using defined link types such as derives-from, refines, verified-by, and conflicts-with.</div></div>
+    <div class="detail-field"><div class="detail-field-label">Sync</div><div class="detail-field-value"><span class="dot green"></span> In sync · <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary)">a3f8c2d</span> · 12s ago</div></div>
+    <div style="margin-top:16px;display:flex;gap:8px;">
+      <button style="padding:6px 14px;border-radius:6px;font-size:12px;background:var(--accent-primary);color:#fff;border:none;cursor:pointer;font-family:var(--font-ui);">Edit</button>
+      <button style="padding:6px 14px;border-radius:6px;font-size:12px;background:var(--surface-primary);color:var(--text-primary);border:1px solid var(--border-default);cursor:pointer;font-family:var(--font-ui);">View in Graph</button>
+      <button style="padding:6px 14px;border-radius:6px;font-size:12px;background:var(--surface-primary);color:var(--text-primary);border:1px solid var(--border-default);cursor:pointer;font-family:var(--font-ui);">Export</button>
+    </div>
   </div>
+  <div class="mockup-label">Direction 4: Split-Panel Workbench</div>
 </div>
 
-<!-- Direction 4: Split-Panel Workbench -->
-<div class="direction-panel" id="dir-3">
-  <h2 class="direction-title">Direction 4: Split-Panel Workbench</h2>
-  <p class="direction-desc">Two-panel layout: left panel shows the requirement list/detail, right panel shows contextual information (traceability, activity, graph preview). Panels are resizable. IDE-inspired workbench feel.</p>
-
-  <div class="mockup-frame dark-mock">
-    <div class="mock-sidebar mock-sidebar-narrow" style="width: 48px; min-width: 48px; align-items: center; padding: 12px 0;">
-      <div style="width: 32px; height: 32px; border-radius: 6px; background: var(--accent-primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 700; margin-bottom: 16px;">R</div>
-      <div style="width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-tertiary); margin-bottom: 4px; cursor: pointer;" title="Dashboard">☰</div>
-      <div style="width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--accent-primary); background: var(--accent-subtle); margin-bottom: 4px; cursor: pointer;" title="Requirements">☷</div>
-      <div style="width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-tertiary); margin-bottom: 4px; cursor: pointer;" title="Graph">◎</div>
-      <div style="width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-tertiary); cursor: pointer;" title="Settings">⚙</div>
-      <div style="margin-top: auto; width: 8px; height: 8px; border-radius: 50%; background: var(--status-covered);"></div>
+<!-- DIRECTION 5: Table-Dense Operator -->
+<div class="mockup" id="m5">
+  <div class="sidebar" style="width:48px;min-width:48px;align-items:center;padding:12px 0;">
+    <div class="sidebar-item" style="padding:8px;justify-content:center;">◉</div>
+    <div class="sidebar-item active" style="padding:8px;justify-content:center;">☰</div>
+    <div class="sidebar-item" style="padding:8px;justify-content:center;">◎</div>
+    <div style="margin-top:auto;padding:8px;text-align:center;"><span class="dot green"></span></div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+    <div class="topbar">
+      <div class="breadcrumb">Requirements · <span>All (298)</span></div>
+      <div style="display:flex;gap:6px;margin-left:auto;">
+        <span style="padding:3px 10px;background:var(--surface-tertiary);border-radius:12px;font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:4px;">Coverage: All ✕</span>
+        <span style="padding:3px 10px;background:var(--surface-tertiary);border-radius:12px;font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:4px;">Module: Auth ✕</span>
+      </div>
+      <button style="padding:4px 10px;border:1px solid var(--border-default);border-radius:4px;font-size:11px;background:var(--surface-primary);color:var(--text-secondary);cursor:pointer;font-family:var(--font-ui);">+ Filter</button>
+      <div class="cmd-k">⌘K</div>
     </div>
-    <div class="mock-main" style="display: flex; flex-direction: row;">
-      <div style="flex: 0.5; border-right: 1px solid var(--border-default); display: flex; flex-direction: column;">
-        <div style="padding: 12px 16px; border-bottom: 1px solid var(--border-default); font-size: 13px; font-weight: 600; display: flex; justify-content: space-between;">
-          <span>Requirements</span>
-          <span style="color: var(--text-tertiary); font-weight: 400; font-size: 12px;">298 total</span>
-        </div>
-        <div style="padding: 8px 12px; border-bottom: 1px solid var(--border-default);">
-          <div class="mock-btn" style="width: 100%; text-align: left; color: var(--text-tertiary); font-size: 12px;">Filter: Status, Coverage, Type...</div>
-        </div>
-        <div style="flex: 1; overflow-y: auto;">
-          <div style="padding: 10px 16px; border-bottom: 1px solid var(--border-default); cursor: pointer; display: flex; align-items: center; gap: 8px;">
-            <span class="status-dot status-covered"></span>
-            <span class="req-id" style="min-width: 60px;">FR-001</span>
-            <span style="font-size: 12px; flex: 1;">Create requirements</span>
-          </div>
-          <div style="padding: 10px 16px; border-bottom: 1px solid var(--border-default); cursor: pointer; display: flex; align-items: center; gap: 8px;">
-            <span class="status-dot status-covered"></span>
-            <span class="req-id" style="min-width: 60px;">FR-002</span>
-            <span style="font-size: 12px; flex: 1;">Custom metadata fields</span>
-          </div>
-          <div style="padding: 10px 16px; border-bottom: 1px solid var(--border-default); cursor: pointer; display: flex; align-items: center; gap: 8px; background: var(--accent-subtle);">
-            <span class="status-dot status-partial"></span>
-            <span class="req-id" style="min-width: 60px;">FR-003</span>
-            <span style="font-size: 12px; flex: 1; font-weight: 500;">Hierarchical tree</span>
-          </div>
-          <div style="padding: 10px 16px; border-bottom: 1px solid var(--border-default); cursor: pointer; display: flex; align-items: center; gap: 8px;">
-            <span class="status-dot status-covered"></span>
-            <span class="req-id" style="min-width: 60px;">FR-004</span>
-            <span style="font-size: 12px; flex: 1;">Stable IDs</span>
-          </div>
-          <div style="padding: 10px 16px; border-bottom: 1px solid var(--border-default); cursor: pointer; display: flex; align-items: center; gap: 8px;">
-            <span class="status-dot status-uncovered"></span>
-            <span class="req-id" style="min-width: 60px;">FR-009</span>
-            <span style="font-size: 12px; flex: 1;">AI-assisted authoring</span>
-          </div>
-          <div style="padding: 10px 16px; border-bottom: 1px solid var(--border-default); cursor: pointer; display: flex; align-items: center; gap: 8px;">
-            <span class="status-dot status-covered"></span>
-            <span class="req-id" style="min-width: 60px;">FR-010</span>
-            <span style="font-size: 12px; flex: 1;">Traceability links</span>
-          </div>
-        </div>
-      </div>
-      <div style="flex: 0.5; display: flex; flex-direction: column; background: var(--surface-secondary);">
-        <div style="padding: 12px 16px; border-bottom: 1px solid var(--border-default); display: flex; gap: 0;">
-          <div style="padding: 6px 12px; font-size: 12px; font-weight: 500; border-bottom: 2px solid var(--accent-primary); color: var(--accent-primary);">Details</div>
-          <div style="padding: 6px 12px; font-size: 12px; color: var(--text-tertiary);">Traceability</div>
-          <div style="padding: 6px 12px; font-size: 12px; color: var(--text-tertiary);">History</div>
-          <div style="padding: 6px 12px; font-size: 12px; color: var(--text-tertiary);">Activity</div>
-        </div>
-        <div style="padding: 20px; flex: 1;">
-          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent-primary); margin-bottom: 4px;">FR-003</div>
-          <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">Hierarchical requirement organization</h3>
-          <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px;">Requirements shall be organized in a hierarchical tree (projects > modules > requirements > sub-requirements) with drag-and-drop reordering.</p>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
-            <div style="padding: 8px; background: var(--surface-tertiary); border-radius: 6px;"><span style="color: var(--text-tertiary);">Status</span><br><span style="color: var(--status-covered);">Active</span></div>
-            <div style="padding: 8px; background: var(--surface-tertiary); border-radius: 6px;"><span style="color: var(--text-tertiary);">Coverage</span><br><span style="color: var(--status-partial);">Partial</span></div>
-            <div style="padding: 8px; background: var(--surface-tertiary); border-radius: 6px;"><span style="color: var(--text-tertiary);">Priority</span><br>P0</div>
-            <div style="padding: 8px; background: var(--surface-tertiary); border-radius: 6px;"><span style="color: var(--text-tertiary);">Sync</span><br><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px;">e4f2a1b</span></div>
-          </div>
-        </div>
-      </div>
+    <div style="flex:1;overflow:auto;padding:0;">
+      <table class="data-table" style="font-size:12px;">
+        <thead>
+          <tr style="position:sticky;top:0;background:var(--surface-primary);z-index:2;">
+            <th style="width:100px;">ID</th><th>Title</th><th style="width:120px;">Module</th><th style="width:50px;">Pri</th><th style="width:80px;">Coverage</th><th style="width:70px;">Sync</th><th style="width:100px;">Last Actor</th><th style="width:50px;">Links</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="req-id">FR-001</span></td><td>Create requirement with structured attributes</td><td>Authoring</td><td>P0</td><td><span class="dot green"></span> 100%</td><td><span class="dot green"></span></td><td>Parker</td><td>5</td></tr>
+          <tr><td><span class="req-id">FR-002</span></td><td>Project-specific metadata fields</td><td>Authoring</td><td>P0</td><td><span class="dot green"></span> 100%</td><td><span class="dot green"></span></td><td>Parker</td><td>3</td></tr>
+          <tr><td><span class="req-id">FR-010</span></td><td>Bidirectional traceability links</td><td>Traceability</td><td>P0</td><td><span class="dot green"></span> 100%</td><td><span class="dot green"></span></td><td><span style="color:var(--actor-agent)">AGENT-01</span></td><td>4</td></tr>
+          <tr><td><span class="req-id">FR-011</span></td><td>Live traceability matrix</td><td>Traceability</td><td>P0</td><td><span class="dot green"></span> 100%</td><td><span class="dot green"></span></td><td>Sam</td><td>3</td></tr>
+          <tr><td><span class="req-id">FR-016</span></td><td>Multi-level traceability chains</td><td>Traceability</td><td>P2</td><td><span class="dot red"></span> 0%</td><td><span class="dot green"></span></td><td>Parker</td><td>0</td></tr>
+          <tr><td><span class="req-id">FR-042</span></td><td>Saved and shared named views</td><td>Search</td><td>P1</td><td><span class="dot red"></span> 0%</td><td><span class="dot green"></span></td><td>Parker</td><td>0</td></tr>
+          <tr><td><span class="req-id">FR-053</span></td><td>Repository folder configuration</td><td>Ingestion</td><td>P0</td><td><span class="dot green"></span> 100%</td><td><span class="dot green"></span></td><td><span style="color:var(--actor-agent)">AGENT-01</span></td><td>2</td></tr>
+          <tr><td><span class="req-id">FR-054</span></td><td>Stable requirement record mapping</td><td>Ingestion</td><td>P0</td><td><span class="dot green"></span> 100%</td><td><span class="dot amber"></span></td><td><span style="color:var(--actor-agent)">AGENT-01</span></td><td>3</td></tr>
+          <tr><td><span class="req-id">FR-058</span></td><td>Ingestion conflict inspection</td><td>Ingestion</td><td>P0</td><td><span class="dot amber"></span> 50%</td><td><span class="dot green"></span></td><td>Devon</td><td>1</td></tr>
+          <tr><td><span class="req-id">FR-060</span></td><td>Schema validation for markdown</td><td>Ingestion</td><td>P1</td><td><span class="dot red"></span> 0%</td><td><span class="dot green"></span></td><td>Parker</td><td>0</td></tr>
+          <tr><td><span class="req-id">AI-001</span></td><td>Published markdown schema</td><td>AI Agent</td><td>P0</td><td><span class="dot green"></span> 100%</td><td><span class="dot green"></span></td><td><span style="color:var(--actor-agent)">AGENT-01</span></td><td>2</td></tr>
+          <tr><td><span class="req-id">AI-006</span></td><td>Agent clarification request</td><td>AI Agent</td><td>P1</td><td><span class="dot red"></span> 0%</td><td><span class="dot green"></span></td><td><span style="color:var(--actor-agent)">AGENT-03</span></td><td>0</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:8px 16px;border-top:1px solid var(--border-default);font-size:11px;color:var(--text-tertiary);display:flex;justify-content:space-between;">
+      <span>298 requirements · 218 covered · 14 orphaned</span>
+      <span><span class="dot green"></span> Synced 12s ago</span>
     </div>
   </div>
-
-  <div class="direction-pros">
-    <strong>Strengths:</strong> Keeps requirement list and detail visible simultaneously. Tabbed right panel provides contextual information without navigation. Collapsed sidebar maximizes content space. IDE-familiar layout for technical users.<br>
-    <strong>Best for:</strong> Requirement review workflows. Business Analysts working through requirements systematically.
-  </div>
+  <div class="mockup-label">Direction 5: Table-Dense Operator</div>
 </div>
 
-<!-- Direction 5: Table-Dense Operator -->
-<div class="direction-panel" id="dir-4">
-  <h2 class="direction-title">Direction 5: Table-Dense Operator</h2>
-  <p class="direction-desc">Full-width data table as the primary view. All requirement metadata visible in columns. Coverage, sync status, and agent attribution as inline indicators. Spreadsheet power with live traceability.</p>
-
-  <div class="mockup-frame dark-mock">
-    <div class="mock-sidebar">
-      <div class="sidebar-logo"><span class="dot"></span> RMT</div>
-      <div class="sidebar-section">Quick Filters</div>
-      <div class="sidebar-item"><span class="status-dot status-uncovered"></span> Uncovered (14)</div>
-      <div class="sidebar-item"><span class="status-dot status-partial"></span> Partial (66)</div>
-      <div class="sidebar-item active"><span class="status-dot" style="background: var(--text-tertiary);"></span> All (298)</div>
-      <div class="sidebar-section">Modules</div>
-      <div class="sidebar-item">Authoring (FR-001–009)</div>
-      <div class="sidebar-item">Traceability (FR-010–016)</div>
-      <div class="sidebar-item">Versioning (FR-020–024)</div>
-      <div class="sidebar-item">Search (FR-040–043)</div>
-      <div class="sidebar-item">Import/Export (FR-050–052)</div>
-      <div class="sidebar-item">Repo Ingestion (FR-053–061)</div>
-      <div class="sidebar-sync"><span class="sync-dot"></span> Synced 12s ago</div>
+<!-- DIRECTION 6: Kanban Coverage Board -->
+<div class="mockup" id="m6">
+  <div class="sidebar">
+    <div class="sidebar-section">Navigation</div>
+    <div class="sidebar-item"><span>◉</span> Dashboard</div>
+    <div class="sidebar-item"><span>☰</span> Table</div>
+    <div class="sidebar-item"><span>◎</span> Graph</div>
+    <div class="sidebar-item active"><span>▦</span> Board</div>
+    <div class="sidebar-section">Projects</div>
+    <div class="sidebar-item"><span>▸</span> Auth Module</div>
+    <div class="sidebar-item"><span>▸</span> Payment Module</div>
+    <div class="sync-indicator"><span class="dot green"></span> Synced 12s ago</div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+    <div class="topbar">
+      <div class="breadcrumb">Board · <span>All Modules</span></div>
+      <div class="cmd-k" style="margin-left:auto;">⌘K</div>
     </div>
-    <div class="mock-main">
-      <div class="mock-topbar">
-        <div class="topbar-breadcrumb">Requirements <span>·</span> All <span>·</span> <strong>298 items</strong></div>
-        <div class="topbar-actions">
-          <button class="mock-btn">Columns</button>
-          <button class="mock-btn">Group by</button>
-          <button class="mock-btn">Export</button>
-          <button class="mock-btn-primary mock-btn">+ New</button>
+    <div class="main" style="padding:16px;">
+      <div class="kanban-board">
+        <div class="kanban-col">
+          <div class="kanban-col-header"><span class="dot green"></span> Covered <span style="color:var(--text-tertiary);font-weight:400;">(218)</span></div>
+          <div class="kanban-card"><div class="card-id">FR-001</div><div class="card-title">Create requirement</div><div class="card-meta"><span>Authoring</span><span>P0</span><span>5 links</span></div></div>
+          <div class="kanban-card"><div class="card-id">FR-010</div><div class="card-title">Bidirectional traceability links</div><div class="card-meta"><span>Traceability</span><span>P0</span><span style="color:var(--actor-agent);">AGENT-01</span></div></div>
+          <div class="kanban-card"><div class="card-id">FR-011</div><div class="card-title">Live traceability matrix</div><div class="card-meta"><span>Traceability</span><span>P0</span><span>3 links</span></div></div>
+          <div class="kanban-card"><div class="card-id">FR-053</div><div class="card-title">Repository folder config</div><div class="card-meta"><span>Ingestion</span><span>P0</span><span style="color:var(--actor-agent);">AGENT-01</span></div></div>
+          <div class="kanban-card"><div class="card-id">AI-001</div><div class="card-title">Published markdown schema</div><div class="card-meta"><span>AI Agent</span><span>P0</span><span>2 links</span></div></div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-col-header"><span class="dot amber"></span> Partial <span style="color:var(--text-tertiary);font-weight:400;">(66)</span></div>
+          <div class="kanban-card"><div class="card-id">FR-058</div><div class="card-title">Ingestion conflict inspection</div><div class="card-meta"><span>Ingestion</span><span>P0</span><span>1 link</span></div></div>
+          <div class="kanban-card"><div class="card-id">FR-023</div><div class="card-title">Baseline comparison diff</div><div class="card-meta"><span>Versioning</span><span>P1</span><span>2 links</span></div></div>
+          <div class="kanban-card"><div class="card-id">FR-014</div><div class="card-title">Downstream impact view</div><div class="card-meta"><span>Traceability</span><span>P1</span><span>1 link</span></div></div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-col-header"><span class="dot red"></span> Uncovered <span style="color:var(--text-tertiary);font-weight:400;">(14)</span></div>
+          <div class="kanban-card"><div class="card-id">FR-016</div><div class="card-title">Multi-level traceability chains</div><div class="card-meta"><span>Traceability</span><span>P2</span><span>0 links</span></div></div>
+          <div class="kanban-card"><div class="card-id">FR-042</div><div class="card-title">Saved and shared views</div><div class="card-meta"><span>Search</span><span>P1</span><span>0 links</span></div></div>
+          <div class="kanban-card"><div class="card-id">FR-060</div><div class="card-title">Schema validation for markdown</div><div class="card-meta"><span>Ingestion</span><span>P1</span><span>0 links</span></div></div>
+          <div class="kanban-card"><div class="card-id">AI-006</div><div class="card-title">Agent clarification request</div><div class="card-meta"><span>AI Agent</span><span>P1</span><span style="color:var(--actor-agent);">AGENT-03</span></div></div>
         </div>
       </div>
-      <div class="mock-content" style="padding: 0;">
-        <table class="mock-table" style="font-size: 12px;">
-          <thead>
-            <tr style="background: var(--surface-secondary);">
-              <th style="width: 80px;">ID</th>
-              <th>Title</th>
-              <th style="width: 80px;">Type</th>
-              <th style="width: 60px;">Priority</th>
-              <th style="width: 80px;">Coverage</th>
-              <th style="width: 70px;">Sync</th>
-              <th style="width: 80px;">Last Actor</th>
-              <th style="width: 60px;">Links</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><span class="req-id">FR-001</span></td>
-              <td style="color: var(--text-primary);">Create requirements with structured fields</td>
-              <td>Functional</td>
-              <td>P0</td>
-              <td><span class="status-dot status-covered"></span>100%</td>
-              <td style="color: var(--status-covered);">In sync</td>
-              <td>Andrei</td>
-              <td>4</td>
-            </tr>
-            <tr>
-              <td><span class="req-id">FR-003</span></td>
-              <td style="color: var(--text-primary);">Hierarchical tree organization</td>
-              <td>Functional</td>
-              <td>P0</td>
-              <td><span class="status-dot status-partial"></span>67%</td>
-              <td style="color: var(--status-covered);">In sync</td>
-              <td>Andrei</td>
-              <td>3</td>
-            </tr>
-            <tr>
-              <td><span class="req-id">FR-042</span></td>
-              <td style="color: var(--text-primary);">Saved views and named filters</td>
-              <td>Functional</td>
-              <td>P1</td>
-              <td><span class="status-dot status-uncovered"></span>0%</td>
-              <td style="color: var(--status-covered);">In sync</td>
-              <td style="color: var(--actor-agent);">AGENT-01</td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <td><span class="req-id">AI-003</span></td>
-              <td style="color: var(--text-primary);">Agent-authored changes attributable via Git</td>
-              <td>AI Agent</td>
-              <td>P0</td>
-              <td><span class="status-dot status-covered"></span>100%</td>
-              <td style="color: var(--status-covered);">In sync</td>
-              <td style="color: var(--actor-agent);">AGENT-02</td>
-              <td>2</td>
-            </tr>
-            <tr>
-              <td><span class="req-id">FR-058</span></td>
-              <td style="color: var(--text-primary);">Detect ingestion conflicts</td>
-              <td>Functional</td>
-              <td>P0</td>
-              <td><span class="status-dot status-partial"></span>50%</td>
-              <td style="color: var(--status-conflict);">Conflict</td>
-              <td>Andrei</td>
-              <td>3</td>
-            </tr>
-            <tr>
-              <td><span class="req-id">NFR-008</span></td>
-              <td style="color: var(--text-primary);">Ingestion freshness within 60s</td>
-              <td>Non-Func</td>
-              <td>P0</td>
-              <td><span class="status-dot status-covered"></span>100%</td>
-              <td style="color: var(--status-covered);">In sync</td>
-              <td>Andrei</td>
-              <td>2</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
     </div>
   </div>
-
-  <div class="direction-pros">
-    <strong>Strengths:</strong> Maximum data density. All metadata visible without clicking into details. Sortable, filterable, groupable columns. Agent attribution visible inline. Familiar to spreadsheet/DOORS users transitioning to this tool.<br>
-    <strong>Best for:</strong> Large requirement sets, bulk operations, compliance reviews, export preparation.
-  </div>
+  <div class="mockup-label">Direction 6: Kanban Coverage Board</div>
 </div>
 
-<!-- Direction 6: Kanban Coverage Board -->
-<div class="direction-panel" id="dir-5">
-  <h2 class="direction-title">Direction 6: Kanban Coverage Board</h2>
-  <p class="direction-desc">Requirements organized in columns by coverage status. Cards show requirement summary with traceability indicators. Drag-and-drop is view-only (coverage is computed, not manually assigned). Board provides visual overview of project health.</p>
-
-  <div class="mockup-frame dark-mock">
-    <div class="mock-sidebar">
-      <div class="sidebar-logo"><span class="dot"></span> RMT</div>
-      <div class="sidebar-section">Views</div>
-      <div class="sidebar-item">Dashboard</div>
-      <div class="sidebar-item">Tree View</div>
-      <div class="sidebar-item">Table View</div>
-      <div class="sidebar-item active">Board View</div>
-      <div class="sidebar-item">Graph View</div>
-      <div class="sidebar-section">Group by</div>
-      <div class="sidebar-item active">Coverage Status</div>
-      <div class="sidebar-item">Module</div>
-      <div class="sidebar-item">Priority</div>
-      <div class="sidebar-item">Type</div>
-      <div class="sidebar-sync"><span class="sync-dot"></span> Synced 12s ago</div>
-    </div>
-    <div class="mock-main">
-      <div class="mock-topbar">
-        <div class="topbar-breadcrumb">Board View <span>·</span> Grouped by Coverage Status</div>
-        <div class="topbar-actions">
-          <button class="mock-btn">Filter</button>
-          <button class="mock-btn">⌘K</button>
-        </div>
-      </div>
-      <div class="mock-content" style="display: flex; gap: 16px; overflow-x: auto; align-items: flex-start;">
-        <!-- Covered column -->
-        <div style="min-width: 260px; flex: 1;">
-          <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><span class="status-dot status-covered"></span> Covered <span style="color: var(--text-tertiary); font-weight: 400;">218</span></div>
-          <div style="background: var(--surface-tertiary); border: 1px solid var(--border-default); border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer;">
-            <div style="font-size: 12px; display: flex; justify-content: space-between; margin-bottom: 6px;"><span class="req-id">FR-001</span><span style="font-size: 11px; color: var(--text-tertiary);">P0</span></div>
-            <div style="font-size: 12px; font-weight: 500; margin-bottom: 8px;">Create requirements with structured fields</div>
-            <div style="display: flex; gap: 6px; font-size: 10px;">
-              <span style="padding: 2px 6px; background: var(--surface-secondary); border-radius: 4px; color: var(--status-covered);">2 tests ✓</span>
-              <span style="padding: 2px 6px; background: var(--surface-secondary); border-radius: 4px; color: var(--status-covered);">1 issue ✓</span>
-            </div>
-          </div>
-          <div style="background: var(--surface-tertiary); border: 1px solid var(--border-default); border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer;">
-            <div style="font-size: 12px; display: flex; justify-content: space-between; margin-bottom: 6px;"><span class="req-id">FR-010</span><span style="font-size: 11px; color: var(--text-tertiary);">P0</span></div>
-            <div style="font-size: 12px; font-weight: 500; margin-bottom: 8px;">Bidirectional traceability links</div>
-            <div style="display: flex; gap: 6px; font-size: 10px;">
-              <span style="padding: 2px 6px; background: var(--surface-secondary); border-radius: 4px; color: var(--status-covered);">3 tests ✓</span>
-              <span style="padding: 2px 6px; background: var(--surface-secondary); border-radius: 4px; color: var(--actor-agent);">Agent</span>
-            </div>
-          </div>
-          <div style="font-size: 11px; color: var(--text-tertiary); padding: 8px; text-align: center;">+216 more</div>
-        </div>
-        <!-- Partial column -->
-        <div style="min-width: 260px; flex: 1;">
-          <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><span class="status-dot status-partial"></span> Partial <span style="color: var(--text-tertiary); font-weight: 400;">66</span></div>
-          <div style="background: var(--surface-tertiary); border: 1px solid var(--border-default); border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer;">
-            <div style="font-size: 12px; display: flex; justify-content: space-between; margin-bottom: 6px;"><span class="req-id">FR-003</span><span style="font-size: 11px; color: var(--text-tertiary);">P0</span></div>
-            <div style="font-size: 12px; font-weight: 500; margin-bottom: 8px;">Hierarchical tree organization</div>
-            <div style="display: flex; gap: 6px; font-size: 10px;">
-              <span style="padding: 2px 6px; background: var(--surface-secondary); border-radius: 4px; color: var(--status-covered);">1 test ✓</span>
-              <span style="padding: 2px 6px; background: var(--surface-secondary); border-radius: 4px; color: var(--status-uncovered);">1 test ✗</span>
-            </div>
-          </div>
-          <div style="background: var(--surface-tertiary); border: 1px solid var(--border-default); border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; border-left: 3px solid var(--status-conflict);">
-            <div style="font-size: 12px; display: flex; justify-content: space-between; margin-bottom: 6px;"><span class="req-id">FR-058</span><span style="font-size: 11px; color: var(--status-conflict);">⚠ Conflict</span></div>
-            <div style="font-size: 12px; font-weight: 500; margin-bottom: 8px;">Detect ingestion conflicts</div>
-            <div style="display: flex; gap: 6px; font-size: 10px;">
-              <span style="padding: 2px 6px; background: var(--surface-secondary); border-radius: 4px; color: var(--status-partial);">Needs resolve</span>
-            </div>
-          </div>
-          <div style="font-size: 11px; color: var(--text-tertiary); padding: 8px; text-align: center;">+64 more</div>
-        </div>
-        <!-- Uncovered column -->
-        <div style="min-width: 260px; flex: 1;">
-          <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><span class="status-dot status-uncovered"></span> Uncovered <span style="color: var(--text-tertiary); font-weight: 400;">14</span></div>
-          <div style="background: var(--surface-tertiary); border: 1px solid var(--border-default); border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer;">
-            <div style="font-size: 12px; display: flex; justify-content: space-between; margin-bottom: 6px;"><span class="req-id">FR-042</span><span style="font-size: 11px; color: var(--text-tertiary);">P1</span></div>
-            <div style="font-size: 12px; font-weight: 500; margin-bottom: 8px;">Saved views and named filters</div>
-            <div style="display: flex; gap: 6px; font-size: 10px;">
-              <span style="padding: 2px 6px; background: var(--surface-secondary); border-radius: 4px; color: var(--status-uncovered);">No links</span>
-            </div>
-          </div>
-          <div style="background: var(--surface-tertiary); border: 1px solid var(--border-default); border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer;">
-            <div style="font-size: 12px; display: flex; justify-content: space-between; margin-bottom: 6px;"><span class="req-id">AI-006</span><span style="font-size: 11px; color: var(--text-tertiary);">P1</span></div>
-            <div style="font-size: 12px; font-weight: 500; margin-bottom: 8px;">Agent clarification requests</div>
-            <div style="display: flex; gap: 6px; font-size: 10px;">
-              <span style="padding: 2px 6px; background: var(--surface-secondary); border-radius: 4px; color: var(--status-uncovered);">No impl</span>
-            </div>
-          </div>
-          <div style="font-size: 11px; color: var(--text-tertiary); padding: 8px; text-align: center;">+12 more</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="direction-pros">
-    <strong>Strengths:</strong> Instant visual sense of project health distribution. Uncovered column makes gaps impossible to miss. Conflict states visible on cards. Good for quick triage and status meetings.<br>
-    <strong>Best for:</strong> Sprint planning, triage sessions, project health reviews. Product Owners and AI SDLC Managers.
-  </div>
 </div>
 
 <script>
-function showDir(index) {
-  document.querySelectorAll('.direction-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('dir-' + index).classList.add('active');
-  document.querySelectorAll('.nav-tab')[index].classList.add('active');
+function show(n) {
+  document.querySelectorAll('.mockup').forEach(m => m.classList.remove('active'));
+  document.querySelectorAll('.controls button:not(.theme-toggle)').forEach(b => b.classList.remove('active'));
+  document.getElementById('m'+n).classList.add('active');
+  document.querySelectorAll('.controls button:not(.theme-toggle)')[n-1].classList.add('active');
 }
-
-function setTheme(theme) {
-  document.querySelectorAll('.theme-toggle button').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-  document.querySelectorAll('.mockup-frame').forEach(frame => {
-    frame.classList.remove('light-mock', 'dark-mock');
-    frame.classList.add(theme === 'dark' ? 'dark-mock' : 'light-mock');
-  });
+function toggleTheme() {
+  document.body.classList.toggle('dark');
 }
 </script>
-
 </body>
 </html>
