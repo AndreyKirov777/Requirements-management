@@ -10,11 +10,13 @@ stepsCompleted: ['step-e-01-discovery', 'step-e-02-review', 'step-e-03-edit']
 lastEdited: '2026-03-15'
 editHistory:
   - date: '2026-03-15'
-    changes: 'Reworked the PRD to address validation findings: added explicit user journeys and project-type requirements, introduced the AI SDLC DevOps persona and CI/CD journey, mapped success metrics and functional requirements to journeys, tightened functional and non-functional requirement wording for traceability and measurability, and clarified browser support, accessibility, responsive behavior, and SEO applicability.'
+    changes: 'Aligned scope to a single-tenant deployment model and removed non-essential UI-compliance and shared-deployment assumptions from the product definition, UX constraints, deployment assumptions, and non-functional requirements.'
+  - date: '2026-03-15'
+    changes: 'Reworked the PRD to address validation findings: added explicit user journeys and project-type requirements, introduced the AI SDLC DevOps persona and CI/CD journey, mapped success metrics and functional requirements to journeys, tightened functional and non-functional requirement wording for traceability and measurability, and clarified browser support, responsive behavior, and SEO applicability.'
   - date: '2026-03-15'
     changes: 'Reframed the product around its core idea: synchronization between Git-stored requirements and the application database. Updated the Executive Summary, hypothesis, and product goals to make synchronization the defining capability that powers traceability, compliance reporting, UI authoring, and AI-first development workflows. Removed User NPS from v1 success metrics for this internal product.'
   - date: '2026-03-09'
-    changes: 'Removed Workflow & Approval functionality and Accessibility NFR. Added GitLab support as v1 integration alongside GitHub. Reframed PRD around Git-as-source-of-truth model: requirements always live in Git, system acts as traceability graph engine that indexes from Git. Removed API-centric AI agent interface. Adopted Option B (UI authoring writes back to Git via PRs).'
+    changes: 'Removed Workflow & Approval functionality and an earlier UI quality NFR. Added GitLab support as v1 integration alongside GitHub. Reframed PRD around Git-as-source-of-truth model: requirements always live in Git, system acts as traceability graph engine that indexes from Git. Removed API-centric AI agent interface. Adopted Option B (UI authoring writes back to Git via PRs).'
   - date: '2026-03-08'
     changes: 'Added hybrid repo/database sync requirements, GitHub webhook ingestion, and PR-based reverse sync model.'
 ---
@@ -286,14 +288,7 @@ The PRD's functional requirements trace back to the following primary journeys. 
 - Screens below `768px` are not target authoring environments in v1; they may provide limited read-only access only.
 - Dense tables such as the traceability matrix may use horizontal scrolling on smaller supported widths, but core actions must remain discoverable.
 
-### 6.3 Accessibility Level
-
-- Core authenticated workflows shall meet **WCAG 2.1 AA** on supported desktop and tablet layouts.
-- Keyboard-only users shall be able to complete requirement authoring, traceability review, baseline comparison, and export workflows.
-- All status indicators used for coverage, conflict, or approval state shall have a non-color cue.
-- Accessibility validation shall be part of release readiness for the web application, not deferred to a later product phase.
-
-### 6.4 SEO Strategy
+### 6.3 SEO Strategy
 
 - SEO is **not applicable to authenticated in-app routes in v1** because the product is intended for signed-in team workflows, not public content discovery.
 - Public product-marketing pages, if created later, are outside the scope of this PRD and may define their own SEO strategy.
@@ -392,10 +387,9 @@ Requirements are numbered with the prefix `FR-` and grouped by functional area. 
 | -- | -------- | ----------- |
 | NFR-001 | Performance | Requirement list views with up to 10,000 requirements shall load in under 2 seconds for the 95th percentile, and traceability matrix generation for a project of 2,000 requirements shall complete in under 10 seconds for the 95th percentile, as measured by synthetic browser tests on supported desktop browsers. |
 | NFR-002 | Availability | The authenticated web application and public webhook ingestion endpoints shall maintain 99.9% monthly availability excluding scheduled maintenance, as measured by 1-minute interval uptime probes and incident records. |
-| NFR-003 | Security | All persisted tenant data shall be encrypted at rest with AES-256 or equivalent and all network traffic shall use TLS 1.3 or higher; 100% of interactive web UI and integration API requests shall require an authenticated principal except explicitly documented webhook verification endpoints, as verified by quarterly configuration audits and annual penetration testing. |
-| NFR-004 | Auditability | Audit logs shall be append-only, tamper-evident, and retained for a minimum of 10 years or a stricter tenant-specific policy, as verified by quarterly control audits and annual restore tests. |
+| NFR-003 | Security | All persisted system data shall be encrypted at rest with AES-256 or equivalent and all network traffic shall use TLS 1.3 or higher; 100% of interactive web UI and integration API requests shall require an authenticated principal except explicitly documented webhook verification endpoints, as verified by quarterly configuration audits and annual penetration testing. |
+| NFR-004 | Auditability | Audit logs shall be append-only, tamper-evident, and retained for a minimum of 10 years or a stricter organization-specific policy, as verified by quarterly control audits and annual restore tests. |
 | NFR-005 | Scalability | The system shall support projects with up to 100,000 requirements while keeping response time and throughput within 10% of baseline under normal load, as measured by quarterly load-testing runs. |
-| NFR-006 | Multi-tenancy | No tenant-scoped read or write request shall expose data belonging to another tenant in production, as verified by automated isolation tests on every release and quarterly penetration tests. |
 | NFR-007 | API Rate Limits | The integration API shall sustain at least 1,000 requests per minute per authenticated client with 95th percentile response time under 500 ms under documented normal load, as measured by load tests. |
 | NFR-008 | Ingestion Freshness | 95% of merged changes to requirement files shall be reflected in the system graph within 60 seconds, measured from webhook receipt to successful graph update completion. |
 | NFR-009 | UI-to-Repo Freshness | 95% of UI-originated requirement changes shall produce a repository pull or merge request within 5 minutes of submission, as measured by background job telemetry. |
@@ -461,7 +455,7 @@ These requirements apply specifically to use cases in regulated industries (medi
 
 **Audit Storage:** Append-only audit log store. Consider immutable logging service (e.g., AWS QLDB, or custom append-only Postgres with trigger-based controls).
 
-**Deployment:** Cloud-native, container-based (Kubernetes). Must support SaaS multi-tenant deployment and private cloud / on-premises deployment for regulated customers with data sovereignty requirements. Requirement validation results, traceability summaries, and reconciliation status should be consumable by CI/CD systems operated by AI SDLC DevOps teams.
+**Deployment:** Cloud-native, container-based (Kubernetes). The product targets single-tenant deployments per environment, including managed cloud and private cloud / on-premises deployments for regulated customers with data sovereignty requirements. Requirement validation results, traceability summaries, and reconciliation status should be consumable by CI/CD systems operated by AI SDLC DevOps teams.
 
 ---
 
@@ -586,9 +580,7 @@ These requirements apply specifically to use cases in regulated industries (medi
 
 **5. Undo is safe; deletion is not.** Requirements should support soft-deletion and restoration. Audit trails should be immutable.
 
-**6. Accessibility is part of product quality.** Core flows must remain keyboard-usable, screen-reader-friendly, and understandable without color alone.
-
-**7. Pipeline-visible states matter.** Validation, conflict, coverage, and publish states should be easy for both humans and CI/CD automation to consume.
+**6. Pipeline-visible states matter.** Validation, conflict, coverage, and publish states should be easy for both humans and CI/CD automation to consume.
 
 ---
 
@@ -623,7 +615,6 @@ The following are explicitly out of scope for v1 and should not be built:
 - Mobile application
 - AI-generated requirement drafts (AI clarification flagging is in scope; auto-generation is not)
 - Multi-language UI localization
-- On-premises / self-hosted deployment (SaaS-only for v1)
 - Formal approval workflows, electronic signatures, and change control board (CCB) processes
 - Customer-facing (external stakeholder) portals
 - Direct writes by the system to protected default branches; all system-originated repository changes shall use pull requests only
@@ -649,5 +640,3 @@ The following are explicitly out of scope for v1 and should not be built:
 | DO-178C                      | Software Considerations in Airborne Systems and Equipment Certification (aviation standard).                                                                                                           |
 | ISO 26262                    | Functional safety standard for road vehicles.                                                                                                                                                          |
 | RBAC                         | Role-Based Access Control — a method of restricting system access based on a user's assigned role.                                                                                                     |
-
-

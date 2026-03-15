@@ -96,11 +96,10 @@ PRD demonstrates good information density with minimal violations.
 
 ### Non-Functional Requirements
 
-**Total NFRs Analyzed:** 12
+**Total NFRs Analyzed:** 11
 
-**Missing Metrics:** 4
+**Missing Metrics:** 3
 - Line 275 (`NFR-003`): Security controls are specified, but no measurable success criterion is given.
-- Line 278 (`NFR-006`): `strict data isolation` is important but not quantified or operationalized.
 - Line 282 (`NFR-010`): Idempotency requirement lacks a measurable criterion or explicit verification target.
 - Line 283 (`NFR-011`): Reliability workflow is specified, but no timing or error-budget metric is attached.
 
@@ -110,14 +109,13 @@ PRD demonstrates good information density with minimal violations.
 - Line 279 (`NFR-007`): Throughput target exists, but measurement method/context is incomplete.
 - Line 284 (`NFR-012`): Freshness target exists, but measurement method is not explicit.
 
-**Missing Context:** 5
+**Missing Context:** 4
 - Line 274 (`NFR-002`): No operating window or service scope beyond SLA label.
 - Line 275 (`NFR-003`): No context for threat model, trust boundary, or validation scope.
-- Line 278 (`NFR-006`): No isolation boundary or failure condition defined.
 - Line 282 (`NFR-010`): No delivery context or event model specified.
 - Line 283 (`NFR-011`): No retry thresholds or operational success criteria specified.
 
-**NFR Violations Total:** 17
+**NFR Violations Total:** 15
 
 ### Overall Assessment
 
@@ -238,9 +236,6 @@ Covered by measurable performance NFRs such as list load time and traceability m
 **seo_strategy:** Missing  
 No SEO or indexing strategy is documented for the web application.
 
-**accessibility_level:** Missing  
-No explicit accessibility target (for example WCAG level) is documented.
-
 ### Excluded Sections (Should Not Be Present)
 
 **native_features:** Absent ✓
@@ -249,14 +244,14 @@ No explicit accessibility target (for example WCAG level) is documented.
 
 ### Compliance Summary
 
-**Required Sections:** 1/5 present
+**Required Sections:** 2/4 present
 **Excluded Sections Present:** 0
 **Compliance Score:** 20%
 
 **Severity:** Critical
 
 **Recommendation:**
-PRD is missing required sections for `web_app`. Add browser support, responsive design, accessibility level, and SEO strategy, or explicitly justify why one or more of these do not apply to this internal AI-first product.
+PRD is missing required sections for `web_app`. Add browser support, responsive design, and SEO strategy, or explicitly justify why one or more of these do not apply to this internal AI-first product.
 
 ## SMART Requirements Validation
 
@@ -404,7 +399,7 @@ Many FRs have quality issues under SMART because traceability is not explicit. A
    Convert broad or system-centric requirements into actor-capability statements with clearer testability and verification criteria.
 
 3. **Resolve project-type ambiguity for `web_app`**
-   Either add browser support, responsive design, accessibility, and SEO expectations, or explicitly justify a narrower internal-product interpretation.
+   Either add browser support, responsive design, and SEO expectations, or explicitly justify a narrower internal-product interpretation.
 
 ### Summary
 

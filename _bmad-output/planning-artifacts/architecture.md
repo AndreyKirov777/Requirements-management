@@ -36,7 +36,7 @@ The NFR set strongly shapes the architecture:
 
 - Performance targets for large requirement sets, traceability matrix generation, and API responsiveness require indexed queries, careful pagination, and efficient derived read models.
 - Availability and reliability targets require resilient webhook ingestion, retries, dead-letter handling, and operational visibility.
-- Security requirements still require strong authentication, RBAC, and clear system boundaries, but the user has explicitly excluded multi-tenancy from v1.
+- Security requirements still require strong authentication, RBAC, and clear system boundaries in a single-tenant deployment model.
 - Auditability and compliance requirements require append-only audit storage, baseline immutability, long retention, and exportable evidence trails.
 - Ingestion freshness and consistency requirements require asynchronous processing with bounded lag, idempotency, and explicit sync-state modeling per requirement.
 - Deployment requirements imply architecture portable across single-tenant cloud and private/on-prem regulated environments.
@@ -60,10 +60,9 @@ Known constraints and dependencies from the PRD and UX specification:
 - GitHub and GitLab are the only repository platforms in v1.
 - The system must support CI/CD-consumable validation and status outputs for AI SDLC workflows.
 - Core authenticated experiences target desktop and tablet web; mobile authoring is out of scope for v1.
-- The user has explicitly excluded WCAG 2.1 AA compliance as a v1 architectural target.
 - The UX depends on trustworthy near-real-time sync visibility and fast drill-down from dashboard to detail.
 - Integrations include Jira, GitHub Issues, GitLab Issues, Linear, Slack, and generic outbound webhooks.
-- There is no multi-tenant requirement; architecture can assume a single-tenant deployment model per environment.
+- The product targets a single-tenant deployment model per environment.
 
 Open questions with architectural significance remain around conflict policy for concurrent agent changes, file granularity in the repository model, baseline-to-Git mapping, invalid markdown remediation after merge, and CI/CD gating thresholds.
 
@@ -241,7 +240,7 @@ A separate graph database would add operational and consistency complexity too e
 This product is internal/team-facing, compliance-sensitive, and expected to run in private environments. That makes standards-based enterprise auth a better fit than consumer-oriented auth flows or vendor-locked hosted identity assumptions.
 
 **Inference from user guidance:**
-Because there is no multi-tenant requirement, auth and authorization do not need tenant scoping, tenant claims, tenant-aware row partitioning, or tenant admin concepts in v1.
+Auth and authorization do not need tenant scoping, tenant claims, tenant-aware row partitioning, or tenant admin concepts in v1.
 
 ### API & Communication Patterns
 
@@ -765,12 +764,7 @@ All major functional requirement groups are architecturally covered:
 All FR categories have a mapped architectural home in the project structure and domain boundaries. Cross-cutting capabilities such as sync-state visibility, validation, auditability, and export generation are supported by explicit worker, domain, and query-layer decisions.
 
 **Non-Functional Requirements Coverage:**
-The architecture addresses performance, reliability, auditability, observability, security, and ingestion freshness requirements. The main exception is that two PRD requirements were intentionally superseded by explicit user direction:
-
-- multi-tenancy is excluded from v1 architecture
-- WCAG 2.1 AA is excluded as a formal v1 architecture target
-
-These changes are reflected in the architecture, but the PRD has not yet been updated to match.
+The architecture addresses performance, reliability, auditability, observability, security, and ingestion freshness requirements within the defined single-tenant product scope.
 
 ### Implementation Readiness Validation
 
@@ -791,7 +785,6 @@ The implementation patterns cover the main areas where AI or human implementers 
 
 **Important Gaps:**
 
-- The PRD should be reconciled with the architecture for multi-tenancy and accessibility assumptions.
 - Open questions still remain for conflict policy, file granularity in the repository model, baseline-to-Git mapping, and invalid-markdown remediation after merge.
 
 **Nice-to-Have Gaps:**
@@ -802,16 +795,7 @@ The implementation patterns cover the main areas where AI or human implementers 
 
 ### Validation Issues Addressed
 
-The main validation issue identified is requirements-document divergence rather than architectural incoherence.
-
-**Resolved in architecture:**
-
-- Removed multi-tenant assumptions from architecture direction
-- Removed WCAG 2.1 AA as a formal v1 architectural target
-
-**Still pending outside architecture:**
-
-- Update the PRD so readiness validation later does not flag these as alignment gaps
+The architecture is aligned to the current product scope: single-tenant deployment per environment, Git-backed synchronization, and operator-visible async workflows.
 
 ### Architecture Completeness Checklist
 

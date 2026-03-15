@@ -199,7 +199,7 @@ Graph visualization will use a dedicated library (D3.js or vis.js) integrated in
 ### Rationale for Selection
 
 - **Visual uniqueness for a category-defining product** — Shadcn/ui components are copy-paste code you own, not a locked library. This allows full control over the "calm authority" aesthetic without fighting a pre-existing design language (Material, Ant).
-- **Keyboard-first accessibility** — Built on Radix UI primitives, which provide best-in-class keyboard navigation, focus management, and ARIA compliance out of the box. Supports the Linear-inspired interaction model.
+- **Keyboard-first interaction quality** — Built on Radix UI primitives, which provide strong keyboard navigation and focus management for dense product workflows. Supports the Linear-inspired interaction model.
 - **Tailwind utility-first styling** — Enables rapid visual iteration, consistent spacing/color systems via design tokens, and responsive layouts without CSS overhead. Design tokens defined once propagate across all components.
 - **Composable architecture** — Components are small, composable, and independent. Custom components (traceability graph, coverage dashboard panels, requirement editor) integrate seamlessly because they share the same Tailwind token system.
 - **Ecosystem alignment** — Linear, Vercel, and other modern developer tools use this stack. The aesthetic sensibility aligns with the target user base (technically comfortable, Git-fluent professionals).
@@ -208,7 +208,7 @@ Graph visualization will use a dedicated library (D3.js or vis.js) integrated in
 
 **Core component layer:**
 - Shadcn/ui for all standard UI elements: buttons, inputs, dialogs, dropdowns, tooltips, tabs, tables, command palette (Cmd+K), sidebar navigation, toast notifications
-- Radix UI primitives for accessible interactive patterns: popovers, accordions, context menus, hover cards
+- Radix UI primitives for robust interactive patterns: popovers, accordions, context menus, hover cards
 
 **Specialized component layer:**
 - **Traceability graph**: D3.js or vis.js with custom React wrapper, styled with Tailwind tokens for node colors, edge styles, and overlays
@@ -337,7 +337,7 @@ The mental model shift: from "I need to go find out" to "I already know."
 | `--actor-human` | (inherits text color) | No special treatment — humans are the norm |
 | `--actor-agent` | teal-500 | Agent avatar ring, agent badge, agent activity indicator |
 
-All colors meet WCAG 2.1 AA contrast ratios (4.5:1 for normal text, 3:1 for large text) in both light and dark modes.
+All colors are chosen for clear visual separation in both light and dark modes.
 
 ### Typography System
 
@@ -383,15 +383,6 @@ All colors meet WCAG 2.1 AA contrast ratios (4.5:1 for normal text, 3:1 for larg
 **Density:**
 - Default: high-density (tight spacing, compact type scale, more data per viewport)
 - Optional: comfortable density setting increases spacing by 50% for users who prefer more breathing room
-
-### Accessibility Considerations
-
-- All color combinations meet WCAG 2.1 AA contrast ratios in both light and dark modes
-- Coverage status never communicated by color alone — always paired with text labels or icons (checkmark, warning triangle, X circle)
-- Focus indicators visible on all interactive elements (2px indigo ring)
-- Keyboard navigation for all interactive components via Radix UI primitives
-- Reduced motion mode respects `prefers-reduced-motion` media query
-- Minimum touch/click target: 32px height for all interactive elements
 
 ## Design Direction Decision
 
@@ -792,7 +783,7 @@ flowchart TD
 **States:** Default, hover (elevated shadow), loading (pulse animation on value)
 **Variants:** Numeric (coverage %, orphan count), status (sync health: OK/degraded/failed), count (agent activity)
 **Interaction:** Click → navigates to Table view with pre-applied filter matching the KPI context
-**Accessibility:** `role="link"`, `aria-label` includes metric name and current value
+**Interaction Notes:** Entire card is the click target and metric context remains visible in the label and subtitle.
 
 #### 2. Traceability Graph Canvas
 
@@ -802,7 +793,7 @@ flowchart TD
 **States:** Default, node-hovered (highlight edges), node-selected (expanded connections, ring glow), path-highlighted (bold edges on path)
 **Variants:** Focused (single node + neighbors), expanded (multi-level), full (project-wide with clustering)
 **Interaction:** Click node → expand immediate connections; Double-click node → center and focus; Click node + hold → open detail overlay; Drag canvas → pan; scroll → zoom; Path finder: click start node, click end node → path highlighted
-**Accessibility:** Keyboard navigation between nodes (arrow keys), `aria-label` on each node with ID and status, screen-reader summary of graph structure available via command
+**Interaction Notes:** Keyboard navigation between nodes with arrow keys is supported for power users.
 
 #### 3. Requirement Detail Overlay
 
@@ -812,7 +803,7 @@ flowchart TD
 **States:** Closed, open (sliding transition 200ms), editing (fields become editable), saving (spinner on save button)
 **Variants:** Standard (4 tabs), conflict (5th Conflict tab appears when sync status = conflict)
 **Interaction:** Open: slide in from right with backdrop dimming main content slightly; Close: Esc key, click backdrop, or close button; Edit: click any field value to make it editable; Tab to next field; Save: generates PR, shows toast, transitions to "PR pending" state
-**Accessibility:** Focus trapped inside overlay when open, Esc to close, tab navigation between fields and tabs
+**Interaction Notes:** Esc closes the overlay and tab order moves through fields and tabs predictably.
 
 #### 4. Traceability Chain Panel
 
@@ -822,7 +813,7 @@ flowchart TD
 **States:** Default, item-hovered (highlight), item-expanded (shows additional metadata)
 **Variants:** Compact (ID + status only), expanded (full details per item)
 **Interaction:** Click any item → opens its detail overlay (replaces current); hover → shows quick-view popover
-**Accessibility:** List semantics (`role="list"`), each item focusable, arrow keys navigate between items
+**Interaction Notes:** Each item is focusable and arrow keys can move between adjacent items.
 
 #### 5. Activity Feed
 
@@ -832,7 +823,7 @@ flowchart TD
 **States:** Default, expanded (shows full change detail), loading (new items streaming in)
 **Variants:** Global (dashboard — all activity), scoped (detail overlay — single requirement activity)
 **Interaction:** Click item → expands to show full detail; click PR link → opens in new tab; click requirement ID → opens detail overlay
-**Accessibility:** `role="feed"`, `aria-live="polite"` for new items, each item focusable
+**Interaction Notes:** New items can stream into the feed without interrupting review flow.
 
 #### 6. Conflict Resolution View
 
@@ -842,7 +833,7 @@ flowchart TD
 **States:** Comparing (default), resolving (spinner on chosen action), resolved (success state)
 **Variants:** Simple (few fields changed), complex (many fields — scrollable)
 **Interaction:** Click resolution button → confirmation dialog → execute → transition to resolved state
-**Accessibility:** Diff colors supplemented with icons (✗ removed, ✓ added), action buttons clearly labeled
+**Interaction Notes:** Diff colors are supplemented with icons (✗ removed, ✓ added), and resolution actions remain explicit.
 
 #### 7. Sync Status Indicator
 
@@ -852,7 +843,7 @@ flowchart TD
 **States:** Healthy (green, subtle), pending (amber, subtle pulse), failed (red, persistent), conflict (yellow, badge count)
 **Variants:** Compact (sidebar footer), expanded (popover with full detail)
 **Interaction:** Click → popover with sync detail; includes "Re-sync" button for manual trigger
-**Accessibility:** `aria-live="polite"` for status changes, descriptive `aria-label`
+**Interaction Notes:** Footer text and popover detail update as sync state changes.
 
 #### 8. Coverage Status Dot
 
@@ -861,7 +852,7 @@ flowchart TD
 **Anatomy:** 8px circle + optional text label
 **States:** Covered (emerald-500 + "✓" or "100%"); Partial (amber-500 + "◐" or "67%"); Uncovered (rose-500 + "✗" or "0%"); Conflict (yellow-500 + "⚠"); Pending (amber-500 + pulse animation)
 **Variants:** Dot-only (8px, table cells), dot+label (badge, sidebar), dot+percentage (KPI detail)
-**Accessibility:** Never color-only — always paired with icon or text label; `aria-label` states coverage status
+**Interaction Notes:** Coverage state is always paired with an icon or text label for quick scanning.
 
 #### 9. Inline Field Editor
 
@@ -870,7 +861,7 @@ flowchart TD
 **Anatomy:** Display state: field value with subtle hover indicator (pencil icon appears); Edit state: input/textarea/select replaces display value, auto-focused; Slash-command trigger: typing "/" opens action menu (add link, insert template)
 **States:** Display (default), hover (pencil icon), editing (input active), saving (subtle spinner), error (red border + message)
 **Interaction:** Click field → edit mode; Enter or click away → save; Esc → cancel; "/" → slash-command menu
-**Accessibility:** `aria-label` includes field name, edit state announced to screen readers
+**Interaction Notes:** Field name and edit state stay explicit during inline editing.
 
 #### 10. Ingestion Progress Panel
 
@@ -879,7 +870,7 @@ flowchart TD
 **Anatomy:** Progress bar with file count: "Ingesting 142 / 298 files..."; Validation summary updating in real-time: "N valid, M warnings, K errors"; File list (collapsible): each file with status icon (✓ valid, ⚠ warning, ✗ error); Completion state: "Ingestion complete — Dashboard ready" with button to proceed
 **States:** In-progress (animated bar), complete-clean (all green), complete-with-warnings (summary shown), failed (error detail)
 **Interaction:** Progress is automatic; click any file to see validation detail; click "Go to Dashboard" on completion
-**Accessibility:** Progress bar has `role="progressbar"` with `aria-valuenow`; status changes announced via `aria-live`
+**Interaction Notes:** Progress copy always shows processed file counts and current state.
 
 ### Component Implementation Strategy
 
