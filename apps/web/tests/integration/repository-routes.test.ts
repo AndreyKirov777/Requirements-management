@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { GitHubConnectionService } from "@repo/domain";
+import {
+  GitHubConnectionService,
+  RepositorySyncService
+} from "@repo/domain";
+import {
+  InMemoryAuditEntryRepository,
+  InMemoryProjectRepository,
+  InMemoryRepositoryConnectionRepository,
+  InMemoryRepositorySyncConfigRepository
+} from "@repo/db";
 
 const actor = {
   id: "admin-1",
@@ -36,5 +45,56 @@ describe("repository routes behavior", () => {
         { name: "Delta" }
       )
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("hydrates saved sync settings for a connected project", async () => {
+    const projects = new InMemoryProjectRepository();
+    const connections = new InMemoryRepositoryConnectionRepository();
+    const syncConfigs = new InMemoryRepositorySyncConfigRepository();
+    const audits = new InMemoryAuditEntryRepository();
+    const connectionService = new GitHubConnectionService(projects, connections, audits);
+    const syncService = new RepositorySyncService(
+      projects,
+      connections,
+      syncConfigs,
+      audits
+    );
+    const project = await connectionService.createProject(actor, { name: "Epsilon" });
+    const verification = await connectionService.verify(actor, {
+      provider: "github",
+      repositoryOwner: "octo",
+      repositoryName: "docs",
+      installationId: "inst-sync",
+      correlationId: "corr-hydrate"
+    });
+
+    await connectionService.saveConnection(actor, project.id, {
+      provider: verification.provider,
+      repositoryOwner: verification.repositoryOwner,
+      repositoryName: verification.repositoryName,
+      repositoryId: verification.repositoryId,
+      defaultBranch: verification.defaultBranch,
+      credentialReference: verification.credentialReference,
+      connectedAt: verification.connectionTimestamp,
+      lastVerifiedAt: verification.connectionTimestamp,
+      correlationId: "corr-hydrate"
+    });
+
+    await syncService.saveSettings(actor, project.id, {
+      requirementsRootPath: "requirements",
+      namingConventionKind: "kebab-case",
+      namingConventionPattern: null,
+      branchPolicy: "merged_to_default_branch",
+      schema: {
+        schemaVersion: "requirements-markdown/v1",
+        requiredFrontmatterFields: ["id", "title"],
+        requiredBodySections: ["Summary", "Requirements"]
+      },
+      correlationId: "corr-hydrate"
+    });
+
+    const view = await syncService.getSettings(project.id);
+    expect(view?.readyForWebhookIngestion).toBe(true);
+    expect(view?.syncConfig?.namingConventionKind).toBe("kebab-case");
   });
 });

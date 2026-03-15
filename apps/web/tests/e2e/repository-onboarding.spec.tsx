@@ -8,5 +8,6 @@ describe("RepositoryOnboarding", () => {
 
     expect(html).toContain("No repository connected yet");
     expect(html).toContain("Verify and save");
+    expect(html).toContain("Connect a repository and define sync rules");
   });
 });

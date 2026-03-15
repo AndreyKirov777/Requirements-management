@@ -9,12 +9,13 @@ datasource db {
 }
 
 model Project {
-  id                  String                @id @default(uuid()) @db.Uuid
-  name                String
-  repositoryStatus    RepositoryStatus      @default(not_connected) @map("repository_status")
-  createdAt           DateTime              @default(now()) @map("created_at")
-  updatedAt           DateTime              @updatedAt @map("updated_at")
+  id                   String                 @id @default(uuid()) @db.Uuid
+  name                 String
+  repositoryStatus     RepositoryStatus       @default(not_connected) @map("repository_status")
+  createdAt            DateTime               @default(now()) @map("created_at")
+  updatedAt            DateTime               @updatedAt @map("updated_at")
   repositoryConnection RepositoryConnection?
+  repositorySyncConfig RepositorySyncConfig?
 
   @@map("projects")
 }
@@ -50,6 +51,28 @@ model AuditEntry {
   @@map("audit_entries")
 }
 
+model RepositorySyncConfig {
+  id                         String                   @id @default(uuid()) @db.Uuid
+  projectId                  String                   @unique @map("project_id") @db.Uuid
+  requirementsRootPath       String                   @map("requirements_root_path")
+  namingConventionKind       RepositoryNamingConventionKind @map("naming_convention_kind")
+  namingConventionPattern    String?                  @map("naming_convention_pattern")
+  branchPolicy               SyncBranchPolicy         @map("branch_policy")
+  schemaVersion              String                   @map("schema_version")
+  requiredFrontmatterFields  Json                     @map("required_frontmatter_fields")
+  requiredBodySections       Json                     @map("required_body_sections")
+  readinessState             SyncReadinessState       @map("readiness_state")
+  validatedAt                DateTime?                @map("validated_at")
+  readyForIngestionAt        DateTime?                @map("ready_for_ingestion_at")
+  createdBy                  String                   @map("created_by")
+  createdAt                  DateTime                 @default(now()) @map("created_at")
+  updatedBy                  String                   @map("updated_by")
+  updatedAt                  DateTime                 @updatedAt @map("updated_at")
+  project                    Project                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("repository_sync_configs")
+}
+
 enum RepositoryProvider {
   github
   gitlab
@@ -58,4 +81,19 @@ enum RepositoryProvider {
 enum RepositoryStatus {
   connected
   not_connected
+}
+
+enum RepositoryNamingConventionKind {
+  kebab_case
+  numeric_prefix_kebab_case
+  custom_regex
+}
+
+enum SyncBranchPolicy {
+  merged_to_default_branch
+}
+
+enum SyncReadinessState {
+  not_ready
+  ready_for_ingestion
 }

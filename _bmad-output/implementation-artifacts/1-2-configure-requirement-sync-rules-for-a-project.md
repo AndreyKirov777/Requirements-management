@@ -1,6 +1,6 @@
 # Story 1.2: Configure Requirement Sync Rules for a Project
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -20,30 +20,30 @@ so that the system knows exactly which files are authoritative and how they shou
 
 ## Tasks / Subtasks
 
-- [ ] Extend project persistence for repository sync configuration (AC: 1, 2, 4, 5)
-  - [ ] Add a `RepositorySyncConfig` model in `packages/db/prisma/schema.prisma` with a one-to-one relationship to `Project`.
-  - [ ] Persist at minimum `requirements_root_path`, `naming_convention`, `branch_policy`, `schema_version`, `required_frontmatter_fields`, `required_body_sections`, readiness timestamps, and audit provenance fields.
-  - [ ] Keep repository connection data from Story 1.1 separate from sync-rule configuration so provider connectivity and sync readiness can evolve independently.
-- [ ] Implement the administrator sync-settings flow in the web app (AC: 1, 4)
-  - [ ] Build a settings screen under `apps/web/src/app/(app)/settings/repository` for editing root folder, naming convention, branch policy, and schema rules.
-  - [ ] Show the saved current configuration on reload together with a clear readiness state for webhook-based ingestion.
-  - [ ] Reuse the onboarding path from Story 1.1 rather than creating a separate standalone configuration experience.
-- [ ] Validate repository scope and markdown schema before save (AC: 1, 2, 3)
-  - [ ] Add a domain service that uses the provider integration boundary to inspect the configured repository path and confirm it exists on the target branch.
-  - [ ] Validate naming convention input and schema completeness through shared Zod contracts rather than ad hoc UI-only rules.
-  - [ ] Return precise remediation messages for invalid folder paths, unsupported naming rules, and incomplete schema definitions.
-- [ ] Publish a reusable markdown-schema contract for later worker and CI reuse (AC: 2, 3, 5)
-  - [ ] Define the canonical schema version and project override model in `packages/contracts` and `packages/validation`.
-  - [ ] Represent required frontmatter fields and allowed body sections in a way the ingestion worker, API layer, and future CLI validator can all consume unchanged.
-  - [ ] Prevent project settings from drifting away from the shared schema contract by validating persisted config through the same shared types.
-- [ ] Record audit and observability events for sync-rule changes (AC: 5)
-  - [ ] Append audit entries that capture what changed, who changed it, and when.
-  - [ ] Emit structured logs and metrics for validation attempts and successful configuration saves.
-  - [ ] Exclude secret material and provider tokens from both logs and audit payloads.
-- [ ] Add automated coverage for configuration behavior (AC: 1, 2, 3, 4, 5)
-  - [ ] Unit tests for naming convention validation, schema completeness checks, and readiness-state computation.
-  - [ ] Integration tests for saving and reloading sync settings, including invalid folder path and invalid schema scenarios.
-  - [ ] UI or end-to-end coverage for readiness display, inline validation feedback, and persisted settings rehydration.
+- [x] Extend project persistence for repository sync configuration (AC: 1, 2, 4, 5)
+  - [x] Add a `RepositorySyncConfig` model in `packages/db/prisma/schema.prisma` with a one-to-one relationship to `Project`.
+  - [x] Persist at minimum `requirements_root_path`, `naming_convention`, `branch_policy`, `schema_version`, `required_frontmatter_fields`, `required_body_sections`, readiness timestamps, and audit provenance fields.
+  - [x] Keep repository connection data from Story 1.1 separate from sync-rule configuration so provider connectivity and sync readiness can evolve independently.
+- [x] Implement the administrator sync-settings flow in the web app (AC: 1, 4)
+  - [x] Build a settings screen under `apps/web/src/app/(app)/settings/repository` for editing root folder, naming convention, branch policy, and schema rules.
+  - [x] Show the saved current configuration on reload together with a clear readiness state for webhook-based ingestion.
+  - [x] Reuse the onboarding path from Story 1.1 rather than creating a separate standalone configuration experience.
+- [x] Validate repository scope and markdown schema before save (AC: 1, 2, 3)
+  - [x] Add a domain service that uses the provider integration boundary to inspect the configured repository path and confirm it exists on the target branch.
+  - [x] Validate naming convention input and schema completeness through shared Zod contracts rather than ad hoc UI-only rules.
+  - [x] Return precise remediation messages for invalid folder paths, unsupported naming rules, and incomplete schema definitions.
+- [x] Publish a reusable markdown-schema contract for later worker and CI reuse (AC: 2, 3, 5)
+  - [x] Define the canonical schema version and project override model in `packages/contracts` and `packages/validation`.
+  - [x] Represent required frontmatter fields and allowed body sections in a way the ingestion worker, API layer, and future CLI validator can all consume unchanged.
+  - [x] Prevent project settings from drifting away from the shared schema contract by validating persisted config through the same shared types.
+- [x] Record audit and observability events for sync-rule changes (AC: 5)
+  - [x] Append audit entries that capture what changed, who changed it, and when.
+  - [x] Emit structured logs and metrics for validation attempts and successful configuration saves.
+  - [x] Exclude secret material and provider tokens from both logs and audit payloads.
+- [x] Add automated coverage for configuration behavior (AC: 1, 2, 3, 4, 5)
+  - [x] Unit tests for naming convention validation, schema completeness checks, and readiness-state computation.
+  - [x] Integration tests for saving and reloading sync settings, including invalid folder path and invalid schema scenarios.
+  - [x] UI or end-to-end coverage for readiness display, inline validation feedback, and persisted settings rehydration.
 
 ## Dev Notes
 
@@ -180,13 +180,44 @@ GPT-5 Codex
 ### Debug Log References
 
 - Story created via BMAD create-story workflow on 2026-03-15.
+- Implemented repository sync contracts, in-memory persistence, domain services, Next.js routes, and repository settings UI on 2026-03-15.
+- Verified with `npm test`, targeted `npx vitest run packages/domain/src/ingestion/repository-sync-service.test.ts packages/validation/src/markdown-schema.test.ts`, and targeted `npx tsc -p apps/web/tsconfig.json --noEmit --skipLibCheck`.
 
 ### Completion Notes List
 
-- Ultimate context engine analysis completed - comprehensive developer guide created.
-- Reused Story 1.1 as the immediate predecessor context; no app-code implementation learnings exist yet.
-- No `project-context.md` file was present in the workspace.
+- Added shared repository sync contracts and markdown-schema validation helpers so API, UI, and later ingestion/CI flows can consume the same rules.
+- Added repository sync persistence, audit tracking, readiness computation, preview validation, and observability coverage without overloading Story 1.1 connection records.
+- Extended the repository settings UI to reuse onboarding, preview repository scope, surface inline remediation, persist rules, and rehydrate saved configuration from local storage plus the sync-settings API.
+- Added unit, domain integration, and UI render coverage for naming validation, readiness-state behavior, invalid path blocking, and persisted sync settings hydration.
+- Workspace-wide `npm run typecheck` is currently blocked by duplicate generated `LayoutProps` declarations in `apps/web/.next` route types; targeted TypeScript verification of the changed app code passed with `npx tsc -p apps/web/tsconfig.json --noEmit --skipLibCheck`.
 
 ### File List
 
 - _bmad-output/implementation-artifacts/1-2-configure-requirement-sync-rules-for-a-project.md
+- apps/web/package.json
+- apps/web/src/app/api/v1/projects/[projectId]/sync-settings/previews/route.ts
+- apps/web/src/app/api/v1/projects/[projectId]/sync-settings/route.ts
+- apps/web/src/components/settings/repository/repository-onboarding.tsx
+- apps/web/src/lib/server/http.ts
+- apps/web/src/lib/server/service.ts
+- apps/web/tests/e2e/repository-onboarding.spec.tsx
+- apps/web/tests/integration/repository-routes.test.ts
+- packages/contracts/src/api/repository-sync.ts
+- packages/contracts/src/index.ts
+- packages/db/prisma/schema.prisma
+- packages/db/src/index.ts
+- packages/db/src/repositories/repository-sync-config-repository.ts
+- packages/domain/package.json
+- packages/domain/src/index.ts
+- packages/domain/src/ingestion/repository-sync-service.test.ts
+- packages/domain/src/ingestion/repository-sync-service.ts
+- packages/domain/src/integrations/repository-scope-provider.ts
+- packages/observability/src/metrics/connection-metrics.ts
+- packages/validation/package.json
+- packages/validation/src/index.ts
+- packages/validation/src/markdown-schema.test.ts
+- packages/validation/src/markdown-schema.ts
+
+### Change Log
+
+- 2026-03-15: Implemented Story 1.2 repository sync configuration contracts, services, API routes, UI flow, and automated test coverage; moved story to review.

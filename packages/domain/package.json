@@ -9,6 +9,7 @@
   "dependencies": {
     "@repo/contracts": "*",
     "@repo/db": "*",
-    "@repo/observability": "*"
+    "@repo/observability": "*",
+    "@repo/validation": "*"
   }
 }

@@ -1,1 +1,1 @@
-export const validationPackageReady = true;
+export * from "./markdown-schema";
