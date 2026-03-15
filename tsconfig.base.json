@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "types": ["node", "react", "react-dom"],
+    "allowJs": false,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@repo/contracts/*": ["packages/contracts/src/*"],
+      "@repo/db/*": ["packages/db/src/*"],
+      "@repo/domain/*": ["packages/domain/src/*"],
+      "@repo/observability/*": ["packages/observability/src/*"],
+      "@repo/testing/*": ["packages/testing/src/*"],
+      "@repo/ui/*": ["packages/ui/src/*"],
+      "@repo/validation/*": ["packages/validation/src/*"]
+    }
+  }
+}

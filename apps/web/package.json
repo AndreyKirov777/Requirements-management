@@ -1,0 +1,22 @@
+{
+  "name": "@repo/web",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@repo/contracts": "*",
+    "@repo/db": "*",
+    "@repo/domain": "*",
+    "@repo/observability": "*",
+    "@repo/ui": "*",
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^4.1.0"
+  }
+}

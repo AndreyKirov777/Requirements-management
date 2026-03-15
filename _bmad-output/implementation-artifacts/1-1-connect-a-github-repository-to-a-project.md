@@ -1,6 +1,6 @@
 # Story 1.1: Connect a GitHub Repository to a Project
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -20,30 +20,30 @@ so that the application knows which repository will supply requirement content f
 
 ## Tasks / Subtasks
 
-- [ ] Bootstrap the monorepo foundation required for all follow-on work (AC: 1, 4, 5)
-  - [ ] Initialize the workspace with the current shadcn Next.js monorepo scaffold and align it to the architecture target shape at minimum for `apps/web`, root workspace config, and `packages/ui`.
-  - [ ] Add the missing first-pass workspace placeholders required by the architecture so later stories do not need a repo restructure: `apps/worker`, `packages/domain`, `packages/db`, `packages/contracts`, `packages/validation`, `packages/config`, `packages/observability`, and `packages/testing`.
-  - [ ] Document any intentional deviations between generated starter output and the architecture document inside the repo docs or ADRs created during implementation.
-- [ ] Define the first project and repository-connection persistence layer (AC: 1, 2, 4, 5)
-  - [ ] Add a `Project` model and a one-to-one `RepositoryConnection` model in `packages/db/prisma/schema.prisma`.
-  - [ ] Persist non-secret repository metadata needed now and by Stories 1.2 and 1.3: provider, repository owner, repository name, repository ID if available, default branch, connection timestamp, last verification timestamp, and a credential or installation reference.
-  - [ ] Enforce that raw access tokens are not stored directly in the primary relational tables.
-- [ ] Implement the authenticated admin flow to create a project and connect GitHub (AC: 1, 2, 3, 4)
-  - [ ] Build a project creation and repository setup screen under the workspace settings and onboarding flow.
-  - [ ] Support GitHub as the only provider in this story, but keep provider-specific logic behind an integration boundary that can later accommodate GitLab.
-  - [ ] Show clear connected or not-connected status in the workspace UI after save and on reload.
-- [ ] Verify GitHub repository access before persistence (AC: 2, 3)
-  - [ ] Add a verification step that checks repository reachability and authorized access before the final save.
-  - [ ] Read the repository default branch from GitHub instead of asking the user to type it if the API already returns it.
-  - [ ] Map failures into stable product error codes and user-facing messages for authentication, authorization, and repository lookup failures.
-- [ ] Record auditability and operational telemetry for each connection attempt (AC: 5)
-  - [ ] Append audit entries for successful connection creation or updates.
-  - [ ] Emit structured logs and metrics for both successful and failed verification attempts with correlation IDs and actor context.
-  - [ ] Exclude tokens, secrets, webhook secrets, and private key material from logs, errors, and audit payloads.
-- [ ] Add automated tests that lock the behavior down before Story 1.2 extends it (AC: 1, 2, 3, 4, 5)
-  - [ ] Unit tests for connection validation, error mapping, and provider boundary behavior.
-  - [ ] Integration tests for API route handlers plus persistence behavior, including "do not save invalid connection" scenarios.
-  - [ ] UI or end-to-end coverage for the connected and not-connected states plus actionable error rendering.
+- [x] Bootstrap the monorepo foundation required for all follow-on work (AC: 1, 4, 5)
+  - [x] Initialize the workspace with the current shadcn Next.js monorepo scaffold and align it to the architecture target shape at minimum for `apps/web`, root workspace config, and `packages/ui`.
+  - [x] Add the missing first-pass workspace placeholders required by the architecture so later stories do not need a repo restructure: `apps/worker`, `packages/domain`, `packages/db`, `packages/contracts`, `packages/validation`, `packages/config`, `packages/observability`, and `packages/testing`.
+  - [x] Document any intentional deviations between generated starter output and the architecture document inside the repo docs or ADRs created during implementation.
+- [x] Define the first project and repository-connection persistence layer (AC: 1, 2, 4, 5)
+  - [x] Add a `Project` model and a one-to-one `RepositoryConnection` model in `packages/db/prisma/schema.prisma`.
+  - [x] Persist non-secret repository metadata needed now and by Stories 1.2 and 1.3: provider, repository owner, repository name, repository ID if available, default branch, connection timestamp, last verification timestamp, and a credential or installation reference.
+  - [x] Enforce that raw access tokens are not stored directly in the primary relational tables.
+- [x] Implement the authenticated admin flow to create a project and connect GitHub (AC: 1, 2, 3, 4)
+  - [x] Build a project creation and repository setup screen under the workspace settings and onboarding flow.
+  - [x] Support GitHub as the only provider in this story, but keep provider-specific logic behind an integration boundary that can later accommodate GitLab.
+  - [x] Show clear connected or not-connected status in the workspace UI after save and on reload.
+- [x] Verify GitHub repository access before persistence (AC: 2, 3)
+  - [x] Add a verification step that checks repository reachability and authorized access before the final save.
+  - [x] Read the repository default branch from GitHub instead of asking the user to type it if the API already returns it.
+  - [x] Map failures into stable product error codes and user-facing messages for authentication, authorization, and repository lookup failures.
+- [x] Record auditability and operational telemetry for each connection attempt (AC: 5)
+  - [x] Append audit entries for successful connection creation or updates.
+  - [x] Emit structured logs and metrics for both successful and failed verification attempts with correlation IDs and actor context.
+  - [x] Exclude tokens, secrets, webhook secrets, and private key material from logs, errors, and audit payloads.
+- [x] Add automated tests that lock the behavior down before Story 1.2 extends it (AC: 1, 2, 3, 4, 5)
+  - [x] Unit tests for connection validation, error mapping, and provider boundary behavior.
+  - [x] Integration tests for API route handlers plus persistence behavior, including "do not save invalid connection" scenarios.
+  - [x] UI or end-to-end coverage for the connected and not-connected states plus actionable error rendering.
 
 ## Dev Notes
 
@@ -213,13 +213,97 @@ GPT-5 Codex
 ### Debug Log References
 
 - Story created via BMAD create-story workflow on 2026-03-15.
+- Implemented monorepo scaffold, API routes, domain services, Prisma models, and UI flow on 2026-03-15.
+- Validation run completed with `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build` on 2026-03-15.
 
 ### Completion Notes List
 
 - Ultimate context engine analysis completed - comprehensive developer guide created.
 - No previous story file existed, so there were no prior implementation learnings to inherit.
 - No `project-context.md` file was present in the workspace.
+- Added a Next.js 16 monorepo starter with the architecture-aligned package boundaries and placeholder worker/config/testing packages.
+- Implemented project creation, GitHub repository verification, repository connection save flow, shared contracts, structured error handling, audit logging, and redacted operational telemetry.
+- Added ADR documentation for bootstrap deviations, Prisma 7 config, and automated coverage for unit, integration, UI, and worker baseline checks.
 
 ### File List
 
 - _bmad-output/implementation-artifacts/1-1-connect-a-github-repository-to-a-project.md
+- .editorconfig
+- .env.example
+- .github/workflows/ci.yml
+- .github/workflows/deploy.yml
+- .github/workflows/validate-requirements.yml
+- .gitignore
+- README.md
+- apps/web/next-env.d.ts
+- apps/web/next.config.ts
+- apps/web/package.json
+- apps/web/src/app/(app)/dashboard/page.tsx
+- apps/web/src/app/(app)/layout.tsx
+- apps/web/src/app/(app)/settings/repository/page.tsx
+- apps/web/src/app/api/v1/integrations/github/repository-verifications/route.ts
+- apps/web/src/app/api/v1/projects/[projectId]/repository-connections/route.ts
+- apps/web/src/app/api/v1/projects/route.ts
+- apps/web/src/app/globals.css
+- apps/web/src/app/layout.tsx
+- apps/web/src/app/page.tsx
+- apps/web/src/components/settings/repository/repository-onboarding.tsx
+- apps/web/src/lib/auth/actor.ts
+- apps/web/src/lib/server/http.ts
+- apps/web/src/lib/server/service.ts
+- apps/web/tests/e2e/repository-onboarding.spec.tsx
+- apps/web/tests/integration/repository-routes.test.ts
+- apps/web/tsconfig.json
+- apps/worker/package.json
+- apps/worker/src/main.test.ts
+- apps/worker/src/main.ts
+- apps/worker/tsconfig.json
+- biome.json
+- docker-compose.yml
+- docs/adr/0001-story-1-1-bootstrap-deviations.md
+- package-lock.json
+- package.json
+- packages/config/package.json
+- packages/contracts/package.json
+- packages/contracts/src/api/project-connection.ts
+- packages/contracts/src/enums/repository-provider.ts
+- packages/contracts/src/errors/api-error.ts
+- packages/contracts/src/index.ts
+- packages/db/package.json
+- packages/db/prisma.config.ts
+- packages/db/prisma/schema.prisma
+- packages/db/src/index.ts
+- packages/db/src/repositories/audit-entry-repository.ts
+- packages/db/src/repositories/project-repository.ts
+- packages/db/src/repositories/repository-connection-repository.ts
+- packages/domain/package.json
+- packages/domain/src/auth/require-admin.ts
+- packages/domain/src/index.ts
+- packages/domain/src/integrations/github-connection-service.test.ts
+- packages/domain/src/integrations/github-connection-service.ts
+- packages/domain/src/integrations/github-provider.ts
+- packages/domain/src/shared/domain-error.ts
+- packages/observability/package.json
+- packages/observability/src/index.ts
+- packages/observability/src/logging/logger.ts
+- packages/observability/src/metrics/connection-metrics.ts
+- packages/testing/package.json
+- packages/testing/src/index.ts
+- packages/ui/package.json
+- packages/ui/src/components/ui/button.tsx
+- packages/ui/src/components/ui/card.tsx
+- packages/ui/src/components/ui/input.tsx
+- packages/ui/src/index.ts
+- packages/validation/package.json
+- packages/validation/src/index.ts
+- pnpm-workspace.yaml
+- scripts/backfill-read-models.ts
+- scripts/bootstrap.ts
+- scripts/seed-dev.ts
+- scripts/validate-requirements.ts
+- tsconfig.base.json
+- turbo.json
+
+### Change Log
+
+- 2026-03-15: Bootstrapped the monorepo foundation, implemented the Story 1.1 GitHub connection slice, added shared contracts and observability, and verified the repo with typecheck, lint, tests, and production build.
